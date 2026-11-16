@@ -8,8 +8,8 @@ podman network exists fashion-net    || podman network create fashion-net
 podman volume  exists fashion-output || podman volume create fashion-output
 podman volume  exists fashion-db     || podman volume create fashion-db
 mkdir -p dataset secrets
-[ -s secrets/api_token.txt ]   || openssl rand -hex 16 > secrets/api_token.txt
-[ -s secrets/db_password.txt ] || openssl rand -hex 12 > secrets/db_password.txt
+[ -s secrets/api_token.txt ]   || openssl rand -hex 16 | tr -d '\n' > secrets/api_token.txt
+[ -s secrets/db_password.txt ] || openssl rand -hex 12 | tr -d '\n' > secrets/db_password.txt
 chmod 600 secrets/*.txt
 for s in api_token db_password; do
   podman secret exists $s && podman secret rm $s
