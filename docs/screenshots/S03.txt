@@ -1,0 +1,27 @@
+[student@workstation fashion-mnist-podman]$ grep -E '^unqualified-search-registries' /etc/containers/registries.conf
+unqualified-search-registries = ["registry.access.redhat.com", "registry.redhat.io", "docker.io"]
+[student@workstation fashion-mnist-podman]$ skopeo inspect docker://registry.access.redhat.com/ubi9/python-311 | head -12
+{
+    "Name": "registry.access.redhat.com/ubi9/python-311",
+    "Digest": "sha256:a0bdb55576fc5b8d6704279307817828ef027e1065533ceba133fe9516003a6c",
+    "RepoTags": [
+        "1",
+        "1-12",
+        "1-12-source",
+        "1-17",
+        "1-17.1690899890",
+        "1-17.1690899890-source",
+        "1-17.1692772360",
+        "1-17.1692772360-source",
+[student@workstation fashion-mnist-podman]$ podman pull registry.access.redhat.com/ubi9/python-311:latest | tail -3
+Trying to pull registry.access.redhat.com/ubi9/python-311:latest...
+Getting image source signatures
+Checking if image destination supports signatures
+Copying blob sha256:77af39e07c8772be94a5bbd590e288d7e5808598a5b8f657776376702d9f0d6b
+Copying blob sha256:b92afddf0767ef642e726ec1c22bc4f0fd182e341ea65e03d586e287290dd3c1
+Copying blob sha256:3da9d5da9c0d150232a8d10166e9501729302ed14fd8716bcb813eba4f01132c
+Copying blob sha256:8669339e03904c8270fbf33fd1b3fcb3ef7c957a6e9c23dbaf342cfa06f86a8e
+Copying config sha256:c04750c4c98c0502dccd173dba00d6b2bb0a027a8f74e6260b9b850ba06266bb
+Writing manifest to image destination
+Storing signatures
+c04750c4c98c0502dccd173dba00d6b2bb0a027a8f74e6260b9b850ba06266bb

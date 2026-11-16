@@ -1,0 +1,16 @@
+[student@workstation fashion-mnist-podman]$ podman rm -f fashion-api fashion-ui fashion-db fashion-trainer fashion-bg-trainer 2>/dev/null; podman ps -a
+CONTAINER ID  IMAGE                               COMMAND               CREATED     STATUS                 PORTS                         NAMES
+49d5d4421859  docker.io/library/nginx:latest      nginx -g daemon o...  3 days ago  Exited (0) 3 days ago  0.0.0.0:8002->80/tcp, 80/tcp  demo-nginx-RA2411028010014
+9730727fca3a  localhost/edusmart:RA2411028010014  nginx -g daemon o...  3 days ago  Exited (0) 3 days ago  0.0.0.0:8009->80/tcp, 80/tcp  edusmart-RA2411028010014
+b54c3cb4b5ea  docker.io/library/nginx:latest      nginx -g daemon o...  3 days ago  Exited (0) 3 days ago  0.0.0.0:8001->80/tcp, 80/tcp  demo-html-RA2411028010014
+[student@workstation fashion-mnist-podman]$ podman volume rm -f fashion-output fashion-db fashion-scratch fashion_fashion-output fashion_fashion-db 2>/dev/null; podman volume ls
+fashion-output
+fashion-db
+[student@workstation fashion-mnist-podman]$ podman network rm fashion-net fashion_fashion-net 2>/dev/null; podman network ls
+fashion-net
+NETWORK ID    NAME        DRIVER
+2f259bab93aa  podman      bridge
+[student@workstation fashion-mnist-podman]$ podman secret rm api_token db_password 2>/dev/null; podman secret ls
+3734f1e452e7d1581b72115d0
+3971fcfc394b4da5f78de44cc
+ID          NAME        DRIVER      CREATED     UPDATED

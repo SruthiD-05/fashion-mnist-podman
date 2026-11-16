@@ -1,0 +1,16 @@
+[student@workstation fashion-mnist-podman]$ podman-compose logs trainer 2>&1 | grep -E 'STEP|TEST ACCURACY' | head -8
+STEP 1/4  Load the Fashion-MNIST dataset
+STEP 2/4  Build and train the CNN
+[student@workstation fashion-mnist-podman]$ podman-compose down 2>&1 | tail -6
+podman rm fashion-api
+exit code: 0
+podman rm fashion-db
+exit code: 0
+podman rm fashion-trainer
+exit code: 0
+[student@workstation fashion-mnist-podman]$ podman volume ls
+DRIVER      VOLUME NAME
+local       fashion-output
+local       fashion-db
+local       fashion-mnist-podman_fashion-output
+local       fashion-mnist-podman_fashion-db

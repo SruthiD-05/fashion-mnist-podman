@@ -1,0 +1,27 @@
+[student@workstation fashion-mnist-podman]$ podman volume create fashion-output
+fashion-output
+[student@workstation fashion-mnist-podman]$ podman volume create fashion-db
+fashion-db
+[student@workstation fashion-mnist-podman]$ podman volume ls
+DRIVER      VOLUME NAME
+local       fashion-output
+local       fashion-db
+[student@workstation fashion-mnist-podman]$ podman unshare cat /proc/self/uid_map
+         0       1000          1
+         1     100000      65536
+[student@workstation fashion-mnist-podman]$ podman unshare chown -R 1001:0 dataset && ls -ln dataset | head -5
+total 30164
+-rw-r--r--. 1 101000 1000  4422102 Nov 15 13:13 t10k-images-idx3-ubyte.gz
+-rw-r--r--. 1 101000 1000     5148 Nov 15 13:13 t10k-labels-idx1-ubyte.gz
+-rw-r--r--. 1 101000 1000 26421880 Nov 15 13:13 train-images-idx3-ubyte.gz
+-rw-r--r--. 1 101000 1000    29515 Nov 15 13:13 train-labels-idx1-ubyte.gz
+[student@workstation fashion-mnist-podman]$ podman secret create api_token secrets/api_token.txt
+a2e40f95332c93aac69f191ea
+[student@workstation fashion-mnist-podman]$ podman secret create db_password secrets/db_password.txt
+6a7277ad851b41003962e186e
+[student@workstation fashion-mnist-podman]$ podman secret ls
+ID                         NAME         DRIVER      CREATED                 UPDATED
+6a7277ad851b41003962e186e  db_password  file        Less than a second ago  Less than a second ago
+a2e40f95332c93aac69f191ea  api_token    file        Less than a second ago  Less than a second ago
+[student@workstation fashion-mnist-podman]$ podman secret inspect db_password --format '{{.Spec.Name}} driver={{.Spec.Driver.Name}} created={{.CreatedAt}}'
+db_password driver=file created=2026-11-16 12:46:22.611766558 -0500 EST

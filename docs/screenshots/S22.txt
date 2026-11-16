@@ -1,0 +1,12 @@
+[student@workstation fashion-mnist-podman]$ podman network disconnect fashion-net fashion-api
+[student@workstation fashion-mnist-podman]$ curl -s localhost:8000/api/info | python3 -m json.tool | grep database
+Expecting value: line 1 column 1 (char 0)
+[student@workstation fashion-mnist-podman]$ podman network connect fashion-net fashion-api
+[student@workstation fashion-mnist-podman]$ curl -s localhost:8000/api/info | python3 -m json.tool | grep database
+    "database": "error: connection to server at \"fashion-db\" (10.89.0.6), port 5432 failed: FATAL:  password authentication failed for user \"fashion\"",
+[student@workstation fashion-mnist-podman]$ podman stop fashion-db
+fashion-db
+[student@workstation fashion-mnist-podman]$ curl -s localhost:8000/api/info | python3 -m json.tool | grep database
+    "database": "error: could not translate host name \"fashion-db\" to address: Name or service not known",
+[student@workstation fashion-mnist-podman]$ podman start fashion-db
+fashion-db

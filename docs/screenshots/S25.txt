@@ -1,0 +1,39 @@
+[student@workstation fashion-mnist-podman]$ podman generate kube fashion-pod > ~/fashion-pod-generated.yaml && head -20 ~/fashion-pod-generated.yaml
+# Save the output of this file and use kubectl create -f to import
+# it into Kubernetes.
+#
+# Created with podman-5.2.2
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    io.kubernetes.cri-o.SandboxID/fashion-pod-api: 7386dbdd19c1ef00f2633cb025a10861a6f66eb4c07b818c9890a4877457a10d
+    io.kubernetes.cri-o.SandboxID/fashion-pod-ui: 7386dbdd19c1ef00f2633cb025a10861a6f66eb4c07b818c9890a4877457a10d
+  creationTimestamp: "2026-11-16T17:54:27Z"
+  labels:
+    app: fashion-pod
+  name: fashion-pod
+spec:
+  containers:
+  - env:
+    - name: DB_HOST
+      value: fashion-db
+    - name: APP_ENV
+[student@workstation fashion-mnist-podman]$ podman pod rm -f fashion-pod
+ab83c039be102c27ae4b2f0be6ba1efbee8c21a14aa3b0dca13c16edea8b4014
+[student@workstation fashion-mnist-podman]$ podman kube play kube/fashion-pod.yaml
+Pod:
+c93c9ba3935fac02c128b2f61caad0fed03961d458459db7ffae05a2217db194
+Containers:
+f86906aa562fe23952325e276f72839829488e630321587dccf0f254dcdd0784
+42384afc5b5efb44fc215846b5b961ae9bf9fbbd1caa8a8789d6c3322425e293
+
+[student@workstation fashion-mnist-podman]$ curl -s localhost:8082/api/info | python3 -m json.tool | grep app_env
+    "app_env": "kube-play",
+[student@workstation fashion-mnist-podman]$ podman kube down kube/fashion-pod.yaml
+Pods stopped:
+c93c9ba3935fac02c128b2f61caad0fed03961d458459db7ffae05a2217db194
+Pods removed:
+c93c9ba3935fac02c128b2f61caad0fed03961d458459db7ffae05a2217db194
+Secrets removed:
+Volumes removed:

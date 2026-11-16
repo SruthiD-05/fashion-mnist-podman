@@ -1,0 +1,16 @@
+[student@workstation fashion-mnist-podman]$ cat /etc/redhat-release
+Red Hat Enterprise Linux release 9.5 (Plow)
+[student@workstation fashion-mnist-podman]$ podman version | head -8
+Client:       Podman Engine
+Version:      5.2.2
+API Version:  5.2.2
+Go Version:   go1.22.5 (Red Hat 1.22.5-2.el9)
+Built:        Thu Aug 22 09:08:32 2024
+OS/Arch:      linux/amd64
+[student@workstation fashion-mnist-podman]$ podman info --format 'rootless={{.Host.Security.Rootless}}  cgroup={{.Host.CgroupsVersion}}  storage={{.Store.GraphDriverName}}'
+rootless=true  cgroup=v2  storage=overlay
+[student@workstation fashion-mnist-podman]$ getenforce
+Enforcing
+[student@workstation fashion-mnist-podman]$ skopeo --version; podman-compose --version 2>/dev/null | tail -1
+skopeo version 1.16.1
+exit code: 0

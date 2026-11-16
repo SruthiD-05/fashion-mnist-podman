@@ -1,0 +1,16 @@
+[student@workstation fashion-mnist-podman]$ podman pod create --name fashion-pod -p 8081:8080 --network fashion-net --add-host fashion-api:127.0.0.1
+ab83c039be102c27ae4b2f0be6ba1efbee8c21a14aa3b0dca13c16edea8b4014
+[student@workstation fashion-mnist-podman]$ podman run -d --pod fashion-pod --name fashion-pod-api -e APP_ENV=pod -e DB_HOST=fashion-db --secret api_token --secret db_password -v fashion-output:/output:ro localhost/fashion-api:1.0
+ae2c0e84f4a24b664993e621df2c17a56c315b1c2789f1a079dbac8369d7389f
+[student@workstation fashion-mnist-podman]$ podman run -d --pod fashion-pod --name fashion-pod-ui localhost/fashion-ui:1.0
+676f762e47c4a6d9fa59bf81260d738c4053c6c573fd8a4ebcce4023ebe70fdd
+[student@workstation fashion-mnist-podman]$ podman pod ps
+POD ID        NAME         STATUS      CREATED        INFRA ID      # OF CONTAINERS
+ab83c039be10  fashion-pod  Running     8 seconds ago  7386dbdd19c1  3
+[student@workstation fashion-mnist-podman]$ podman ps --pod --filter pod=fashion-pod --format 'table {{.Names}}\t{{.Status}}\t{{.PodName}}'
+NAMES               STATUS                   PODNAME
+ab83c039be10-infra  Up 9 seconds             fashion-pod
+fashion-pod-api     Up 9 seconds (starting)  fashion-pod
+fashion-pod-ui      Up 9 seconds             fashion-pod
+[student@workstation fashion-mnist-podman]$ curl -s localhost:8081/api/info | python3 -m json.tool | grep app_env
+    "app_env": "pod",

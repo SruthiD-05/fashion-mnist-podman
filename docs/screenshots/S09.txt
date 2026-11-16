@@ -1,0 +1,34 @@
+[student@workstation fashion-mnist-podman]$ podman run --name fashion-trainer --rm --network fashion-net -e EPOCHS=5 --memory 2g -v ./dataset:/data:Z -v fashion-output:/output localhost/fashion-trainer:1.0 2>&1 | grep -E 'STEP|^  (train:|trainable|epoch [0-9]+/|TEST ACCURACY)|\[(OK |BAD)\]|saved to'
+STEP 1/4  Load the Fashion-MNIST dataset
+  train: (60000, 28, 28)  test: (10000, 28, 28)  classes: 10
+STEP 2/4  Build and train the CNN
+  trainable parameters: 206,922
+  epoch 1/5  loss=0.4254  test_acc=0.8823  elapsed=36s
+  epoch 2/5  loss=0.2840  test_acc=0.8930  elapsed=73s
+  epoch 3/5  loss=0.2409  test_acc=0.8969  elapsed=110s
+  epoch 4/5  loss=0.2147  test_acc=0.9050  elapsed=147s
+  epoch 5/5  loss=0.1902  test_acc=0.9077  elapsed=184s
+STEP 3/4  Evaluate accuracy on the test set
+  TEST ACCURACY: 90.77%  (9077/10000)
+STEP 4/4  Show sample predictions with true labels
+  [OK ] test#4455  predicted=Sandal       true=Sandal
+  [OK ] test#1782  predicted=Bag          true=Bag
+  [OK ] test#6359  predicted=Ankle boot   true=Ankle boot
+  [OK ] test#1714  predicted=Trouser      true=Trouser
+  [OK ] test#623   predicted=Ankle boot   true=Ankle boot
+  [BAD] test#8762  predicted=Dress        true=Shirt
+  [OK ] test#6360  predicted=Coat         true=Coat
+  [OK ] test#6889  predicted=Trouser      true=Trouser
+  [OK ] test#4616  predicted=Trouser      true=Trouser
+  [OK ] test#9681  predicted=Bag          true=Bag
+  [OK ] test#148   predicted=Pullover     true=Pullover
+  [OK ] test#444   predicted=Shirt        true=Shirt
+  [OK ] test#3368  predicted=Ankle boot   true=Ankle boot
+  [OK ] test#322   predicted=Shirt        true=Shirt
+  [OK ] test#9164  predicted=Bag          true=Bag
+  [OK ] test#1335  predicted=Dress        true=Dress
+  [OK ] test#6775  predicted=Ankle boot   true=Ankle boot
+  [OK ] test#5662  predicted=Sneaker      true=Sneaker
+  [OK ] test#2861  predicted=Pullover     true=Pullover
+  [OK ] test#3354  predicted=Bag          true=Bag
+  saved to /output: confusion_matrix.png, metrics.json, model.npz, sample_predictions.png, test_subset.npz, training_curve.png

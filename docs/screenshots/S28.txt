@@ -1,0 +1,19 @@
+[student@workstation fashion-mnist-podman]$ podman login docker.io -u sruthid05
+Password: 
+Login Succeeded!
+[student@workstation fashion-mnist-podman]$ podman tag localhost/fashion-base:1.0 docker.io/sruthid05/fashion-base:1.0
+[student@workstation fashion-mnist-podman]$ podman tag localhost/fashion-trainer:1.0 docker.io/sruthid05/fashion-trainer:1.0
+[student@workstation fashion-mnist-podman]$ podman tag localhost/fashion-api:1.0 docker.io/sruthid05/fashion-api:1.0
+[student@workstation fashion-mnist-podman]$ podman tag localhost/fashion-ui:1.0 docker.io/sruthid05/fashion-ui:1.0
+[student@workstation fashion-mnist-podman]$ podman push docker.io/sruthid05/fashion-base:1.0 2>&1 | tail -2
+Copying config sha256:7f6f2c3b1ec9ef69a6b41ada1097e53c2e9b9ba7f15aa657403fb4d611d13781
+Writing manifest to image destination
+[student@workstation fashion-mnist-podman]$ podman push docker.io/sruthid05/fashion-trainer:1.0 2>&1 | tail -2
+Copying config sha256:f0468ec15318c5e86af4e75bc1ddc016b0982047d628bf32739c6672c53c1b53
+Writing manifest to image destination
+[student@workstation fashion-mnist-podman]$ podman push docker.io/sruthid05/fashion-api:1.0 2>&1 | tail -2
+Copying config sha256:db8f09393ed0f921b7241a319fca6c1ac06433f27bdedbd86bd78b8a83747108
+Writing manifest to image destination
+[student@workstation fashion-mnist-podman]$ podman push docker.io/sruthid05/fashion-ui:1.0 2>&1 | tail -2
+Copying config sha256:f08dab7fe169a912c06612d7dc5af906ee1b55310b30b10cd7b907e585af25d1
+Writing manifest to image destination

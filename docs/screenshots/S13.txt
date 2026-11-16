@@ -1,0 +1,25 @@
+[student@workstation fashion-mnist-podman]$ podman cp db/init.sql fashion-db:/tmp/init.sql
+[student@workstation fashion-mnist-podman]$ podman exec fashion-db psql -U fashion -d fashion -q -f /tmp/init.sql
+[student@workstation fashion-mnist-podman]$ podman exec fashion-db psql -U fashion -d fashion -c '\dt'
+             List of relations
+ Schema |      Name       | Type  |  Owner  
+--------+-----------------+-------+---------
+ public | fashion_classes | table | fashion
+ public | predictions     | table | fashion
+(2 rows)
+
+[student@workstation fashion-mnist-podman]$ podman exec fashion-db psql -U fashion -d fashion -c 'SELECT * FROM fashion_classes'
+ id |    name     |  category   
+----+-------------+-------------
+  0 | T-shirt/top | tops
+  1 | Trouser     | bottoms
+  2 | Pullover    | tops
+  3 | Dress       | dresses
+  4 | Coat        | outerwear
+  5 | Sandal      | footwear
+  6 | Shirt       | tops
+  7 | Sneaker     | footwear
+  8 | Bag         | accessories
+  9 | Ankle boot  | footwear
+(10 rows)
+

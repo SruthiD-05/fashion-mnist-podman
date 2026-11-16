@@ -1,0 +1,31 @@
+[student@workstation fashion-mnist-podman]$ podman-compose config | head -25
+usage: podman-compose [-h] [-v] [-f file] [-p PROJECT_NAME]
+                      [--podman-path PODMAN_PATH] [--podman-args args]
+                      [--podman-pull-args args] [--podman-push-args args]
+                      [--podman-build-args args] [--podman-inspect-args args]
+                      [--podman-run-args args] [--podman-start-args args]
+                      [--podman-stop-args args] [--podman-rm-args args]
+                      [--podman-volume-args args] [--no-ansi] [--no-cleanup]
+                      [--dry-run]
+                      {help,version,pull,push,build,up,down,ps,run,exec,start,stop,restart,logs}
+                      ...
+podman-compose: error: argument command: invalid choice: 'config' (choose from 'help', 'version', 'pull', 'push', 'build', 'up', 'down', 'ps', 'run', 'exec', 'start', 'stop', 'restart', 'logs')
+[student@workstation fashion-mnist-podman]$ EPOCHS=1 podman-compose up -d 2>&1 | tail -8
+podman volume inspect fashion-mnist-podman_fashion-output || podman volume create fashion-mnist-podman_fashion-output
+['podman', 'volume', 'inspect', 'fashion-mnist-podman_fashion-output']
+['podman', 'network', 'exists', 'fashion-mnist-podman_fashion-net']
+podman run --name=fashion-api -d --label io.podman.compose.config-hash=123 --label io.podman.compose.project=fashion-mnist-podman --label io.podman.compose.version=0.0.1 --label com.docker.compose.project=fashion-mnist-podman --label com.docker.compose.project.working_dir=/home/student/fashion-mnist-podman --label com.docker.compose.project.config_files=compose.yaml --label com.docker.compose.container-number=1 --label com.docker.compose.service=api -e APP_ENV=compose -e API_TOKEN_FILE=/run/secrets/api_token -e DB_HOST=fashion-db -e DB_PASSWORD_FILE=/run/secrets/db_password -v fashion-mnist-podman_fashion-output:/output:ro --net fashion-mnist-podman_fashion-net --network-alias api --volume ./secrets/api_token.txt:/run/secrets/api_token:ro,rprivate,rbind --volume ./secrets/db_password.txt:/run/secrets/db_password:ro,rprivate,rbind -p 8000:8000 --restart unless-stopped localhost/fashion-api:1.0
+exit code: 0
+['podman', 'network', 'exists', 'fashion-mnist-podman_fashion-net']
+podman run --name=fashion-ui -d --label io.podman.compose.config-hash=123 --label io.podman.compose.project=fashion-mnist-podman --label io.podman.compose.version=0.0.1 --label com.docker.compose.project=fashion-mnist-podman --label com.docker.compose.project.working_dir=/home/student/fashion-mnist-podman --label com.docker.compose.project.config_files=compose.yaml --label com.docker.compose.container-number=1 --label com.docker.compose.service=ui --net fashion-mnist-podman_fashion-net --network-alias ui -p 8080:8080 --restart unless-stopped localhost/fashion-ui:1.0
+exit code: 0
+[student@workstation fashion-mnist-podman]$ podman-compose ps
+CONTAINER ID  IMAGE                                    COMMAND               CREATED         STATUS                    PORTS                                       NAMES
+b05f0c3047ef  localhost/fashion-trainer:1.0                                  16 seconds ago  Up 17 seconds                                                         fashion-trainer
+bf3bbab38df5  quay.io/sclorg/postgresql-15-c9s:latest  run-postgresql        15 seconds ago  Up 15 seconds             5432/tcp                                    fashion-db
+7839e9427549  localhost/fashion-api:1.0                sh -c exec gunico...  13 seconds ago  Up 13 seconds (starting)  0.0.0.0:8000->8000/tcp, 8000/tcp            fashion-api
+93be4c007af1  localhost/fashion-ui:1.0                 nginx -g daemon o...  11 seconds ago  Up 12 seconds             0.0.0.0:8080->8080/tcp, 8080/tcp, 8443/tcp  fashion-ui
+['podman', '--version', '']
+using podman version: 5.2.2
+podman ps -a --filter label=io.podman.compose.project=fashion-mnist-podman
+exit code: 0

@@ -1,0 +1,15 @@
+[student@workstation fashion-mnist-podman]$ podman stop fashion-ui
+fashion-ui
+[student@workstation fashion-mnist-podman]$ podman ps -a --filter name=fashion-ui --format '{{.Names}} {{.Status}}'
+fashion-ui Exited (0) Less than a second ago
+[student@workstation fashion-mnist-podman]$ podman start fashion-ui
+fashion-ui
+[student@workstation fashion-mnist-podman]$ podman restart fashion-api
+fashion-api
+[student@workstation fashion-mnist-podman]$ podman pause fashion-api
+fashion-api
+[student@workstation fashion-mnist-podman]$ podman ps --filter name=fashion-api --format '{{.Names}} {{.Status}}'
+[student@workstation fashion-mnist-podman]$ podman unpause fashion-api
+fashion-api
+[student@workstation fashion-mnist-podman]$ podman ps --filter name=fashion-api --format '{{.Names}} {{.Status}}'
+fashion-api Up 1 second (starting)

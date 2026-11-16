@@ -1,0 +1,27 @@
+[student@workstation fashion-mnist-podman]$ podman history localhost/fashion-api:1.0 | head -12
+ID            CREATED       CREATED BY                                     SIZE        COMMENT
+80888f40f66f  24 hours ago  /bin/sh -c #(nop) CMD ["sh", "-c", "exec g...  0B          FROM 4287a21d6ea0
+<missing>     24 hours ago  /bin/sh -c #(nop) HEALTHCHECK --interval=3...  0B          FROM 8b3b2582fa75
+<missing>     24 hours ago  /bin/sh -c #(nop) EXPOSE 8000                  0B          FROM 5382bb9284ab
+<missing>     24 hours ago  /bin/sh -c #(nop) USER 1001                    0B          FROM 80888f40f66f
+<missing>     24 hours ago  /bin/sh -c #(nop) COPY multi:78fa7f281a4b5...  14.8kB      FROM 256afeee46fc
+c46d7000444a  24 hours ago  /bin/sh -c #(nop) ENV APP_ENV=dev     OUTP...  0B          FROM fdeba95212e8
+<missing>     24 hours ago  /bin/sh -c #(nop) LABEL name="fashion-api"...  0B          FROM 5d51d52f71a1
+<missing>     24 hours ago  /bin/sh -c #(nop) ARG VERSION                  0B          FROM localhost/fashion-base:1.0
+<missing>     24 hours ago  /bin/sh -c #(nop) CMD ["python", "-c", "im...  0B          FROM 13e898bf5c35
+<missing>     24 hours ago  /bin/sh -c #(nop) USER 1001                    0B          FROM 72994bf4e3b4
+<missing>     24 hours ago  /bin/sh -c #(nop) WORKDIR /opt/app-root/src    0B          FROM a6e5877ba91d
+[student@workstation fashion-mnist-podman]$ podman image inspect localhost/fashion-base:1.0 --format '{{json .Labels}}'
+{"architecture":"x86_64","build-date":"2026-11-12T07:09:34Z","com.redhat.component":"ubi9-minimal-container","com.redhat.license_terms":"https://www.redhat.com/en/about/red-hat-end-user-license-agreements#UBI","cpe":"cpe:/a:redhat:enterprise_linux:9::appstream","description":"Shared base image for the fashion-trainer and fashion-api images (DO188 lab)","distribution-scope":"public","io.buildah.version":"1.37.2","io.k8s.description":"The Universal Base Image Minimal is a stripped down image that uses microdnf as a package manager. This base image is freely redistributable, but Red Hat only supports Red Hat technologies through subscriptions for Red Hat products. This image is maintained by Red Hat and updated regularly.","io.k8s.display-name":"Fashion-MNIST base","io.openshift.expose-services":"","io.openshift.tags":"minimal rhel9","maintainer":"durga","name":"fashion-base","org.opencontainers.image.created":"2026-11-12T07:09:34Z","org.opencontainers.image.revision":"c500a3e71632eb6956c45968727fbf5e847c5c1d","org.opencontainers.image.version":"1.0","release":"1794467051","summary":"Python 3.11 + NumPy runtime for the Fashion-MNIST lab","url":"https://catalog.redhat.com/en/search?searchType=containers","vcs-ref":"c500a3e71632eb6956c45968727fbf5e847c5c1d","vcs-type":"git","vendor":"Red Hat, Inc.","version":"1.0"}
+[student@workstation fashion-mnist-podman]$ podman tag localhost/fashion-api:1.0 localhost/fashion-api:latest
+[student@workstation fashion-mnist-podman]$ podman build --format docker -f api/Containerfile -t localhost/fashion-api:1.0 . 2>&1 | grep -E 'STEP|Using cache' | head -10
+STEP 1/9: FROM localhost/fashion-base:1.0
+STEP 2/9: ARG VERSION=1.0
+--> Using cache 5d51d52f71a1806c796f5239c2f9dcf6fa318e9f39091841110582a7495d7f68
+STEP 3/9: LABEL name="fashion-api"       version="${VERSION}"       summary="REST API for Fashion-MNIST predictions"       io.k8s.display-name="Fashion-MNIST API"       io.openshift.expose-services="8000:http"
+--> Using cache fdeba95212e83caf5ebc864079eed682b04c2dce35a83544208f5677c5366f3e
+STEP 4/9: ENV APP_ENV=dev     OUTPUT_DIR=/output     PORT=8000     GUNICORN_WORKERS=1     GUNICORN_THREADS=4
+--> Using cache 256afeee46fc345f15cca41b99f57ae771b4f4a256451f2a2c5f35821f3a37d1
+STEP 5/9: COPY --chown=1001:0 api/app.py api/db.py ./
+--> Using cache 80888f40f66fc90960fd62e688ade7369e1496151ada019f8127c98ac2326eb9
+STEP 6/9: USER 1001

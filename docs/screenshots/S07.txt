@@ -1,0 +1,8 @@
+[student@workstation fashion-mnist-podman]$ podman network create fashion-net
+fashion-net
+[student@workstation fashion-mnist-podman]$ podman network inspect fashion-net --format '{{.Name}} driver={{.Driver}} dns={{.DNSEnabled}} subnet={{range .Subnets}}{{.Subnet}}{{end}}'
+fashion-net driver=bridge dns=true subnet=10.89.0.0/24
+[student@workstation fashion-mnist-podman]$ podman network ls
+NETWORK ID    NAME         DRIVER
+113f17b650f6  fashion-net  bridge
+2f259bab93aa  podman       bridge

@@ -1,0 +1,12 @@
+[student@workstation fashion-mnist-podman]$ podman kill fashion-ui
+fashion-ui
+[student@workstation fashion-mnist-podman]$ podman inspect fashion-ui --format '{{.State.ExitCode}}'
+137
+[student@workstation fashion-mnist-podman]$ podman rm -f fashion-ui
+fashion-ui
+[student@workstation fashion-mnist-podman]$ podman run -d --name fashion-ui --network fashion-net -p 8080:8080 localhost/fashion-ui:1.0
+25664f52ccc8c0ee36f793102698e61df2652a34e56b27c43265f48d30cf8b1b
+[student@workstation fashion-mnist-podman]$ podman top fashion-api
+USER        PID         PPID        %CPU        ELAPSED        TTY         TIME        COMMAND
+devops      1           0           0.000       11.901609956s  ?           0s          /opt/venv/bin/python3.11 /opt/venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 1 --threads 4 --access-logfile - app:app 
+devops      3           1           0.000       10.901893955s  ?           0s          /opt/venv/bin/python3.11 /opt/venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 1 --threads 4 --access-logfile - app:app 

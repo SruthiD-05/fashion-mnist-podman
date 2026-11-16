@@ -1,0 +1,35 @@
+[student@workstation fashion-mnist-podman]$ curl -s localhost:8000/healthz; echo
+{"model_loaded":true,"status":"ok"}
+
+[student@workstation fashion-mnist-podman]$ curl -s localhost:8000/api/info | python3 -m json.tool | grep -E 'model_loaded|app_env|database|uid|token'
+    "app_env": "lab",
+    "database": "error: connection to server at \"fashion-db\" (10.89.0.3), port 5432 failed: FATAL:  password authentication failed for user \"fashion\"",
+    "model_loaded": true,
+    "token_configured": true,
+    "uid": 1001
+[student@workstation fashion-mnist-podman]$ curl -s -F file=@/home/student/fashion-results/confusion_matrix.png localhost:8000/api/predict | python3 -c 'import json,sys; d=json.load(sys.stdin); d.pop("preprocessed"); print(json.dumps(d, indent=1))'
+{
+ "confidence": 0.6788,
+ "predicted": "Sandal",
+ "saved_to_db": false,
+ "top3": [
+  {
+   "class": "Sandal",
+   "prob": 0.6788
+  },
+  {
+   "class": "Ankle boot",
+   "prob": 0.2844
+  },
+  {
+   "class": "Dress",
+   "prob": 0.0243
+  }
+ ]
+}
+[student@workstation fashion-mnist-podman]$ curl -s -o /dev/null -w 'reload without token -> HTTP %{http_code}\n' -X POST localhost:8000/api/reload
+reload without token -> HTTP 401
+[student@workstation fashion-mnist-podman]$ curl -s -o /dev/null -w 'reload with token    -> HTTP %{http_code}\n' -X POST -H "X-API-Token: $(cat secrets/api_token.txt)" localhost:8000/api/reload
+reload with token    -> HTTP 200
+[student@workstation fashion-mnist-podman]$ podman healthcheck run fashion-api && echo healthy
+healthy
