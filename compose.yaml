@@ -1,0 +1,76 @@
+# Whole stack with podman-compose:   podman-compose up -d
+# (trainer runs once and exits; db + api + ui keep running)
+# Needs ./.env with DB_PASSWORD=... and secrets/*.txt: run scripts/02-prepare.sh first.
+name: fashion
+
+services:
+  trainer:
+    image: localhost/fashion-trainer:1.0
+    build:
+      context: .
+      dockerfile: trainer/Containerfile
+    container_name: fashion-trainer
+    environment:
+      EPOCHS: "${EPOCHS:-5}"
+      BATCH_SIZE: "64"
+      OFFLINE: "${OFFLINE:-false}"
+    volumes:
+      - ./dataset:/data:Z
+      - fashion-output:/output
+    networks: [fashion-net]
+    restart: "no"
+
+  db:
+    image: ${DB_IMAGE:-quay.io/sclorg/postgresql-15-c9s:latest}
+    container_name: fashion-db
+    environment:
+      POSTGRESQL_USER: fashion
+      POSTGRESQL_DATABASE: fashion
+      POSTGRESQL_PASSWORD: "${DB_PASSWORD}"     # from .env (compose secrets are files only)
+    volumes:
+      - fashion-db:/var/lib/pgsql/data
+    networks: [fashion-net]
+    restart: unless-stopped
+
+  api:
+    image: localhost/fashion-api:1.0
+    build:
+      context: .
+      dockerfile: api/Containerfile
+    container_name: fashion-api
+    depends_on: [trainer, db]
+    environment:
+      APP_ENV: compose
+      API_TOKEN_FILE: /run/secrets/api_token
+      DB_HOST: fashion-db
+      DB_PASSWORD_FILE: /run/secrets/db_password
+    secrets: [api_token, db_password]
+    volumes:
+      - fashion-output:/output:ro
+    networks: [fashion-net]
+    ports: ["8000:8000"]
+    restart: unless-stopped
+
+  ui:
+    image: localhost/fashion-ui:1.0
+    build:
+      context: .
+      dockerfile: ui/Containerfile
+    container_name: fashion-ui
+    depends_on: [api]
+    networks: [fashion-net]
+    ports: ["8080:8080"]
+    restart: unless-stopped
+
+volumes:
+  fashion-output:
+  fashion-db:
+
+networks:
+  fashion-net:
+
+secrets:
+  api_token:
+    file: ./secrets/api_token.txt
+  db_password:
+    file: ./secrets/db_password.txt

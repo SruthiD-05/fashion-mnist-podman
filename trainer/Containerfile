@@ -1,0 +1,27 @@
+# fashion-trainer: one-shot job that trains the CNN and writes results to /output
+ARG BASE_IMAGE=localhost/fashion-base:1.0
+FROM ${BASE_IMAGE}
+
+ARG VERSION=1.0
+LABEL name="fashion-trainer" \
+      version="${VERSION}" \
+      summary="Trains a CNN on Fashion-MNIST and saves model, metrics and sample predictions" \
+      io.k8s.display-name="Fashion-MNIST trainer"
+
+# Defaults; override at run time with: podman run -e EPOCHS=10 ...
+ENV EPOCHS=5 \
+    BATCH_SIZE=64 \
+    LEARNING_RATE=0.001 \
+    SEED=42 \
+    TRAIN_LIMIT=0 \
+    NUM_SAMPLES=20 \
+    OFFLINE=false \
+    DATA_DIR=/data \
+    OUTPUT_DIR=/output
+
+COPY --chown=1001:0 trainer/train.py ./
+
+USER 1001
+# /data = dataset cache (bind mount), /output = results (named volume)
+VOLUME ["/data", "/output"]
+ENTRYPOINT ["python", "train.py"]

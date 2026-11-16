@@ -1,0 +1,7 @@
+dataset/*.gz
+wheels/*.whl
+secrets/
+output/
+offline/images/
+**/__pycache__
+.env

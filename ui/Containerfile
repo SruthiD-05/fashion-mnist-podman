@@ -1,0 +1,17 @@
+# fashion-ui: static web page on the UBI nginx image, proxies /api/ to fashion-api
+ARG NGINX_IMAGE=registry.access.redhat.com/ubi9/nginx-122:latest
+FROM ${NGINX_IMAGE}
+
+ARG VERSION=1.0
+LABEL name="fashion-ui" \
+      version="${VERSION}" \
+      summary="Web UI for the Fashion-MNIST classifier" \
+      io.k8s.display-name="Fashion-MNIST UI" \
+      io.openshift.expose-services="8080:http"
+
+COPY ui/nginx-api.conf "${NGINX_DEFAULT_CONF_PATH}/"
+COPY ui/index.html ./
+
+USER 1001
+EXPOSE 8080
+CMD ["nginx", "-g", "daemon off;"]

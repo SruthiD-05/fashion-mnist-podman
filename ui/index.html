@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fashion Item Classifier</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23e00'/%3E%3Cpath d='M16 8a3 3 0 1 1 3 3l-3 2.2L6 21h20l-10-7.8' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f4f5f7; --surface: #ffffff; --surface-2: #f8f9fb; --ink: #151a23; --muted: #626d7c;
+    --line: #e3e6eb; --accent: #e00000; --accent-ink: #ffffff; --accent-soft: #fdecec;
+    --ok: #1f7a3d; --ok-soft: #e6f4ea; --bad: #c4291c; --bad-soft: #fcebea;
+    --chart-1: #2f6fde; --chart-2: #8a94a3; --heat: 47, 111, 222;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+    --radius: 14px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1218; --surface: #171b23; --surface-2: #1d222c; --ink: #e8ebf0; --muted: #98a2b3;
+      --line: #2a303b; --accent: #ff4d4d; --accent-ink: #160505; --accent-soft: #3a1717;
+      --ok: #5cc98a; --ok-soft: #173325; --bad: #ff7468; --bad-soft: #3b1a18;
+      --chart-1: #6d9cff; --chart-2: #7d8796; --heat: 109, 156, 255;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1218; --surface: #171b23; --surface-2: #1d222c; --ink: #e8ebf0; --muted: #98a2b3;
+    --line: #2a303b; --accent: #ff4d4d; --accent-ink: #160505; --accent-soft: #3a1717;
+    --ok: #5cc98a; --ok-soft: #173325; --bad: #ff7468; --bad-soft: #3b1a18;
+    --chart-1: #6d9cff; --chart-2: #7d8796; --heat: 109, 156, 255;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 "Red Hat Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  h1, h2, h3 { font-family: "Red Hat Display", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; letter-spacing: -.01em; }
+  button, select, input { font: inherit; color: inherit; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- top bar ---------- */
+  header.top { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
+  .top-inner { max-width: 1180px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-right: auto; }
+  .brand svg { flex: none; }
+  .brand h1 { margin: 0; font-size: 18px; line-height: 1.2; }
+  .brand small { display: block; color: var(--muted); font-size: 12px; }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--chart-2); }
+  .pill.ok .dot { background: var(--ok); } .pill.bad .dot { background: var(--bad); }
+  .icon-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; width: 36px; height: 36px;
+    display: grid; place-items: center; cursor: pointer; }
+  .icon-btn:hover { background: var(--surface-2); }
+
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px; min-width: 0; }
+  .card-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .card-head h2 { margin: 0; font-size: 17px; }
+  .card-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .card-head .grow { margin-right: auto; }
+  .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 10px; padding: 8px 14px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 14px; }
+  .btn:hover { background: var(--surface-2); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn:disabled { opacity: .55; cursor: progress; }
+  select { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 10px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .seg button { border: 0; background: var(--surface); padding: 7px 12px; cursor: pointer; font-size: 13px; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+
+  /* ---------- KPI tiles ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 16px; }
+  .kpi { display: flex; align-items: center; gap: 14px; padding: 18px; }
+  .kpi b { display: block; font-size: 28px; line-height: 1.1; font-family: "Red Hat Display", system-ui, sans-serif; }
+  .kpi span { color: var(--muted); font-size: 13px; }
+  .ring { flex: none; }
+  .ring circle { fill: none; stroke-width: 7; }
+  .ring .track { stroke: var(--line); } .ring .val { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .8s ease; }
+
+  /* ---------- samples ---------- */
+  .samples { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .sample { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--surface-2); position: relative; }
+  .sample img { width: 100%; aspect-ratio: 1; image-rendering: pixelated; border-radius: 8px; background: #000; display: block; }
+  .sample .badge { position: absolute; top: 16px; right: 16px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
+    font-size: 13px; font-weight: 700; color: #fff; }
+  .sample.ok .badge { background: var(--ok); } .sample.bad .badge { background: var(--bad); }
+  .sample.bad { border-color: color-mix(in srgb, var(--bad) 45%, var(--line)); background: var(--bad-soft); }
+  .sample .pred { margin: 8px 0 0; font-weight: 600; font-size: 14px; }
+  .sample .true { margin: 0; color: var(--muted); font-size: 12px; }
+  .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; margin-top: 8px; }
+  .bar i { display: block; height: 100%; background: var(--chart-1); border-radius: 3px; }
+  .sample.bad .bar i { background: var(--bad); }
+  .conf { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .summary { display: flex; gap: 10px; align-items: center; color: var(--muted); font-size: 13px; }
+  .empty { color: var(--muted); padding: 24px; text-align: center; border: 1px dashed var(--line); border-radius: 12px; grid-column: 1 / -1; }
+
+  /* ---------- upload ---------- */
+  .drop { display: block; border: 2px dashed var(--line); border-radius: 14px; padding: 26px 16px; text-align: center; cursor: pointer; transition: .15s; background: var(--surface-2); }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop strong { display: block; margin-top: 6px; }
+  .drop small { color: var(--muted); }
+  .result { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: center; margin-top: 18px; }
+  .result .thumbs { display: flex; gap: 10px; align-items: flex-end; }
+  .result figure { margin: 0; text-align: center; font-size: 11px; color: var(--muted); }
+  .result figure img { width: 96px; height: 96px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block; margin-bottom: 4px; }
+  .result figure img.px { image-rendering: pixelated; background: #000; }
+  .result h3 { margin: 0 0 8px; font-size: 22px; }
+  .top3 { display: grid; gap: 6px; }
+  .top3 > div { display: grid; grid-template-columns: 96px 1fr 44px; gap: 8px; align-items: center; font-size: 13px; }
+  .top3 .bar { margin: 0; }
+  @media (max-width: 520px) { .result { grid-template-columns: 1fr; } }
+
+  /* ---------- charts ---------- */
+  .classbars { display: grid; gap: 8px; }
+  .classbars > div { display: grid; grid-template-columns: 96px 1fr 52px; gap: 10px; align-items: center; font-size: 13px; }
+  .classbars .bar { height: 10px; margin: 0; border-radius: 5px; }
+  .classbars .bar i { border-radius: 5px; }
+  .classbars em { font-style: normal; text-align: right; color: var(--muted); }
+  svg.curve { width: 100%; height: auto; display: block; }
+  svg.curve text { fill: var(--muted); font-size: 11px; }
+  svg.curve .grid { stroke: var(--line); }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  .cm-wrap { overflow-x: auto; }
+  table.cm { border-collapse: separate; border-spacing: 2px; font-size: 11px; margin: 0 auto; }
+  table.cm th { font-weight: 500; color: var(--muted); padding: 2px 4px; white-space: nowrap; }
+  table.cm thead th { writing-mode: vertical-rl; transform: rotate(180deg); text-align: left; height: 78px; }
+  table.cm tbody th { text-align: right; }
+  table.cm td { width: 38px; height: 30px; text-align: center; border-radius: 4px; cursor: default; }
+  table.cm td.diag { outline: 1.5px solid var(--chart-1); outline-offset: -1.5px; }
+  .cm-note { text-align: center; color: var(--muted); font-size: 12px; margin-top: 10px; min-height: 18px; }
+
+  /* ---------- history ---------- */
+  .mini { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; margin-bottom: 16px; }
+  .mini div { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .mini b { display: block; font-size: 22px; font-family: "Red Hat Display", system-ui, sans-serif; }
+  .mini span { color: var(--muted); font-size: 12px; }
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+  table.hist { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.hist th { text-align: left; font-weight: 600; color: var(--muted); background: var(--surface-2); padding: 9px 12px; white-space: nowrap; }
+  table.hist td { padding: 9px 12px; border-top: 1px solid var(--line); white-space: nowrap; }
+  .chip { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; background: var(--surface-2); border: 1px solid var(--line); }
+  .chip.upload { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+  td.ok { color: var(--ok); font-weight: 600; } td.bad { color: var(--bad); font-weight: 600; }
+  .db-off { padding: 16px; border-radius: 12px; background: var(--surface-2); border: 1px dashed var(--line); color: var(--muted); }
+  .db-off code { background: var(--line); padding: 1px 5px; border-radius: 4px; }
+
+  /* ---------- trainer images ---------- */
+  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+  .gallery button { padding: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; cursor: zoom-in; text-align: left; }
+  .gallery img { width: 100%; height: 180px; object-fit: contain; display: block; background: #fff; }
+  .gallery span { display: block; padding: 8px 12px; font-size: 13px; background: var(--surface); color: var(--ink); border-top: 1px solid var(--line); }
+  dialog { border: 0; border-radius: 14px; padding: 0; max-width: min(96vw, 1000px); background: #fff; }
+  dialog img { display: block; max-width: 100%; max-height: 86vh; }
+  dialog::backdrop { background: rgba(0, 0, 0, .7); }
+
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--bad); color: #fff; padding: 10px 16px;
+    border-radius: 10px; box-shadow: var(--shadow); font-size: 14px; max-width: calc(100vw - 32px); display: none; z-index: 20; }
+  @media (max-width: 640px) { header.top { position: static; } }
+  footer { max-width: 1180px; margin: 0 auto; padding: 0 16px 32px; color: var(--muted); font-size: 12px; text-align: center; }
+  .skeleton { background: linear-gradient(90deg, var(--surface-2), var(--line), var(--surface-2)); background-size: 200% 100%; animation: sk 1.2s infinite; border-radius: 12px; min-height: 200px; }
+  @keyframes sk { to { background-position: -200% 0; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <svg width="36" height="36" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--accent)"/><path d="M16 8a3 3 0 1 1 3 3l-3 2.2L6 21h20l-10-7.8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div><h1>Fashion Item Classifier</h1><small>CNN on Fashion-MNIST · running in Podman containers</small></div>
+    </div>
+    <div class="pills" aria-live="polite">
+      <span class="pill" id="pill-model"><span class="dot"></span>Model</span>
+      <span class="pill" id="pill-db"><span class="dot"></span>Database</span>
+      <span class="pill" id="pill-host"><span class="dot"></span>API</span>
+    </div>
+    <button class="icon-btn" id="theme" title="Switch light / dark" aria-label="Switch light or dark theme">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- KPI tiles -->
+  <section class="kpis" aria-label="Key numbers">
+    <div class="card kpi">
+      <svg class="ring" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+        <circle class="track" cx="32" cy="32" r="27"/>
+        <circle class="val" id="ring" cx="32" cy="32" r="27" stroke-dasharray="169.6" stroke-dashoffset="169.6" transform="rotate(-90 32 32)"/>
+      </svg>
+      <div><b class="num" id="k-acc">–</b><span>test accuracy · 10,000 images</span></div>
+    </div>
+    <div class="card kpi"><div><b class="num" id="k-epochs">–</b><span>epochs trained · <span id="k-params">–</span> images</span></div></div>
+    <div class="card kpi"><div><b class="num" id="k-time">–</b><span>training time in the trainer container</span></div></div>
+    <div class="card kpi"><div><b class="num" id="k-stored">–</b><span>predictions stored in PostgreSQL</span></div></div>
+  </section>
+
+  <!-- samples -->
+  <section class="card" aria-labelledby="h-samples">
+    <div class="card-head">
+      <div class="grow"><h2 id="h-samples">Sample predictions with true labels</h2>
+        <p>Random images from the test set, classified live by the API container.</p></div>
+      <div class="seg" role="group" aria-label="How many images">
+        <button data-n="6" aria-pressed="false">6</button><button data-n="12" aria-pressed="true">12</button><button data-n="24" aria-pressed="false">24</button>
+      </div>
+      <button class="btn primary" id="btn-samples">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 4v5h-5"/></svg>
+        New random images</button>
+    </div>
+    <div class="summary" id="sample-summary"></div>
+    <div class="samples" id="samples" style="margin-top:12px"><div class="skeleton" style="grid-column:1/-1"></div></div>
+  </section>
+
+  <div class="grid-2">
+    <!-- upload -->
+    <section class="card" aria-labelledby="h-upload">
+      <div class="card-head"><div class="grow"><h2 id="h-upload">Classify your own image</h2>
+        <p>Works best with one item on a plain background. It is shrunk to 28×28 grey pixels like the training data.</p></div></div>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept="image/*" hidden>
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <strong>Drop an image here or click to choose</strong>
+        <small>PNG or JPG, up to 5 MB</small>
+      </label>
+      <div id="upres"></div>
+    </section>
+
+    <!-- per-class accuracy -->
+    <section class="card" aria-labelledby="h-class">
+      <div class="card-head"><div class="grow"><h2 id="h-class">Accuracy per clothing type</h2>
+        <p>From the test-set evaluation in <code>metrics.json</code>, sorted best to worst.</p></div></div>
+      <div class="classbars" id="classbars"><div class="skeleton"></div></div>
+    </section>
+  </div>
+
+  <div class="grid-2">
+    <section class="card" aria-labelledby="h-curve">
+      <div class="card-head"><div class="grow"><h2 id="h-curve">Training progress</h2>
+        <p>Loss on the training images and accuracy on the test images after each epoch.</p></div></div>
+      <div id="curve"><div class="skeleton"></div></div>
+    </section>
+    <section class="card" aria-labelledby="h-cm">
+      <div class="card-head"><div class="grow"><h2 id="h-cm">Confusion matrix</h2>
+        <p>Rows are the true class, columns the prediction. Hover a cell for details.</p></div></div>
+      <div class="cm-wrap" id="cm"><div class="skeleton"></div></div>
+      <div class="cm-note" id="cm-note"></div>
+    </section>
+  </div>
+
+  <!-- history -->
+  <section class="card" aria-labelledby="h-hist">
+    <div class="card-head">
+      <div class="grow"><h2 id="h-hist">Prediction history (PostgreSQL container)</h2>
+        <p>Every prediction the API makes is saved as a row in the <code>predictions</code> table.</p></div>
+      <select id="hist-filter" aria-label="Filter rows">
+        <option value="all">All rows</option><option value="sample">Test images</option>
+        <option value="upload">Uploads</option><option value="wrong">Mistakes only</option>
+      </select>
+      <button class="btn" id="btn-hist">Refresh</button>
+    </div>
+    <div id="hist-body"><div class="skeleton"></div></div>
+  </section>
+
+  <!-- trainer images -->
+  <section class="card" aria-labelledby="h-gal">
+    <div class="card-head"><div class="grow"><h2 id="h-gal">Images written by the trainer container</h2>
+      <p>The PNG files in the <code>fashion-output</code> volume. Click to enlarge.</p></div></div>
+    <div class="gallery">
+      <button data-src="/api/images/sample_predictions.png"><img src="/api/images/sample_predictions.png" alt="Sample predictions" loading="lazy"><span>sample_predictions.png</span></button>
+      <button data-src="/api/images/confusion_matrix.png"><img src="/api/images/confusion_matrix.png" alt="Confusion matrix" loading="lazy"><span>confusion_matrix.png</span></button>
+      <button data-src="/api/images/training_curve.png"><img src="/api/images/training_curve.png" alt="Training curve" loading="lazy"><span>training_curve.png</span></button>
+    </div>
+  </section>
+</main>
+<footer id="foot">Fashion-MNIST · DO188 Podman lab</footer>
+<dialog id="lightbox"><img alt=""></dialog>
+<div class="toast" id="toast" role="alert"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const pct = (x, d = 1) => (x * 100).toFixed(d) + "%";
+let sampleCount = 12;
+
+/* ---------- helpers ---------- */
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const body = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(body.error || r.status + " " + r.statusText);
+  return body;
+}
+let toastTimer;
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.style.display = "block";
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = "none", 6000);
+}
+function pill(id, state, text) {
+  const p = $(id); p.className = "pill " + state; p.lastChild.textContent = text;
+}
+
+/* ---------- theme ---------- */
+(function () {
+  let saved = null;
+  try { saved = localStorage.getItem("theme"); } catch (e) {}
+  if (saved) document.documentElement.dataset.theme = saved;
+  $("theme").onclick = () => {
+    const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+    const cur = document.documentElement.dataset.theme || (dark ? "dark" : "light");
+    const next = cur === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("theme", next); } catch (e) {}
+    if (window._metrics) drawCurve(window._metrics.history);
+  };
+})();
+
+/* ---------- status + metrics ---------- */
+async function loadInfo() {
+  try {
+    const i = await api("/api/info");
+    pill("pill-model", i.model_loaded ? "ok" : "bad", i.model_loaded ? "Model loaded" : "Model not trained");
+    const db = String(i.database || "");
+    pill("pill-db", db === "ok" ? "ok" : (db.startsWith("disabled") ? "" : "bad"),
+         db === "ok" ? "PostgreSQL connected" : (db.startsWith("disabled") ? "No database" : "Database error"));
+    $("pill-db").title = db;
+    pill("pill-host", "ok", "API " + (i.hostname || "?") + " · " + i.app_env);
+    $("foot").textContent = `Served by container ${i.hostname || "?"} (uid ${i.uid}, APP_ENV=${i.app_env}) · Fashion-MNIST · DO188 Podman lab`;
+  } catch (e) {
+    pill("pill-host", "bad", "API unreachable"); toast("Cannot reach the API: " + e.message);
+  }
+}
+
+async function loadMetrics() {
+  try {
+    const m = await api("/api/metrics");
+    window._metrics = m;
+    $("k-acc").textContent = pct(m.test_accuracy, 2);
+    $("ring").style.strokeDashoffset = 169.6 * (1 - m.test_accuracy);
+    $("k-epochs").textContent = m.params.epochs;
+    $("k-params").textContent = m.params.train_images.toLocaleString();
+    const s = Math.round(m.training_seconds);
+    $("k-time").textContent = s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : s + "s";
+    drawClassBars(m.per_class_accuracy);
+    drawCurve(m.history);
+    drawMatrix(m.confusion_matrix);
+  } catch (e) {
+    ["classbars", "curve", "cm"].forEach(id => $(id).innerHTML = `<div class="empty">${esc(e.message)}</div>`);
+  }
+}
+
+function drawClassBars(per) {
+  const rows = Object.entries(per).sort((a, b) => b[1] - a[1]);
+  $("classbars").innerHTML = rows.map(([name, v]) =>
+    `<div><span>${esc(name)}</span><div class="bar" title="${pct(v)}"><i style="width:${(v * 100).toFixed(1)}%"></i></div><em class="num">${pct(v)}</em></div>`).join("");
+}
+
+function drawCurve(h) {
+  if (!h || !h.length) return;
+  const W = 520, H = 240, L = 44, R = 46, T = 14, B = 40;
+  const xs = i => L + (h.length === 1 ? (W - L - R) / 2 : i * (W - L - R) / (h.length - 1));
+  const lossMax = Math.max(...h.map(e => e.train_loss)) * 1.1;
+  const accs = h.map(e => e.test_acc), aMin = Math.max(0, Math.min(...accs) - 0.02), aMax = Math.min(1, Math.max(...accs) + 0.01);
+  const yl = v => T + (1 - v / lossMax) * (H - T - B);
+  const ya = v => T + (1 - (v - aMin) / (aMax - aMin || 1)) * (H - T - B);
+  let g = "";
+  for (let k = 0; k <= 4; k++) {
+    const y = T + k * (H - T - B) / 4;
+    g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/>`;
+    g += `<text x="${L - 6}" y="${y + 4}" text-anchor="end">${(lossMax * (1 - k / 4)).toFixed(2)}</text>`;
+    g += `<text x="${W - R + 6}" y="${y + 4}">${pct(aMax - k * (aMax - aMin) / 4, 1)}</text>`;
+  }
+  h.forEach((e, i) => g += `<text x="${xs(i)}" y="${H - B + 16}" text-anchor="middle">${e.epoch}</text>`);
+  const path = f => h.map((e, i) => (i ? "L" : "M") + xs(i).toFixed(1) + " " + f(e).toFixed(1)).join(" ");
+  const css = getComputedStyle(document.documentElement);
+  const c1 = css.getPropertyValue("--chart-1").trim(), c2 = css.getPropertyValue("--chart-2").trim();
+  const dots = (f, c, fmt) => h.map((e, i) => `<circle cx="${xs(i)}" cy="${f(e)}" r="3.5" fill="${c}"><title>epoch ${e.epoch}: ${fmt(e)}</title></circle>`).join("");
+  $("curve").innerHTML = `<svg class="curve" viewBox="0 0 ${W} ${H}" role="img" aria-label="Training loss and test accuracy per epoch">
+    ${g}
+    <path d="${path(e => yl(e.train_loss))}" fill="none" stroke="${c2}" stroke-width="2" stroke-dasharray="5 4"/>
+    <path d="${path(e => ya(e.test_acc))}" fill="none" stroke="${c1}" stroke-width="2.5"/>
+    ${dots(e => yl(e.train_loss), c2, e => "loss " + e.train_loss.toFixed(4))}
+    ${dots(e => ya(e.test_acc), c1, e => "test accuracy " + pct(e.test_acc, 2))}
+    <text x="${(L + W - R) / 2}" y="${H - 2}" text-anchor="middle">epoch</text>
+  </svg>
+  <div class="legend"><span><i style="background:${c1}"></i>test accuracy (right axis)</span><span><i style="background:${c2}"></i>training loss (left axis)</span></div>`;
+}
+
+const CLASSES = ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"];
+function drawMatrix(cm) {
+  if (!cm) return;
+  const max = Math.max(...cm.flat());
+  const off = Math.max(...cm.flatMap((r, i) => r.filter((_, j) => j !== i)));
+  let html = `<table class="cm"><thead><tr><th></th>${CLASSES.map(c => `<th scope="col">${c}</th>`).join("")}</tr></thead><tbody>`;
+  cm.forEach((row, i) => {
+    const total = row.reduce((a, b) => a + b, 0);
+    html += `<tr><th scope="row">${CLASSES[i]}</th>`;
+    row.forEach((v, j) => {
+      // Diagonal scaled to the max; mistakes scaled to the largest mistake so they stay visible
+      const a = i === j ? 0.25 + 0.75 * v / max : (v ? 0.08 + 0.6 * v / off : 0);
+      const fg = a > 0.55 ? "#fff" : "inherit";
+      html += `<td class="num${i === j ? " diag" : ""}" style="background:rgba(var(--heat),${a.toFixed(3)});color:${fg}"
+        data-t="${i}" data-p="${j}" data-v="${v}" data-n="${total}">${v}</td>`;
+    });
+    html += "</tr>";
+  });
+  $("cm").innerHTML = html + "</tbody></table>";
+  $("cm").onmouseover = ev => {
+    const td = ev.target.closest("td"); if (!td) return;
+    const t = CLASSES[td.dataset.t], p = CLASSES[td.dataset.p], v = +td.dataset.v, n = +td.dataset.n;
+    $("cm-note").textContent = t === p
+      ? `${v} of ${n} ${t} images were classified correctly (${pct(v / n)}).`
+      : `${v} ${t} image${v === 1 ? " was" : "s were"} predicted as ${p} (${pct(v / n)} of all ${t} images).`;
+  };
+  $("cm").onmouseleave = () => $("cm-note").textContent = "";
+}
+
+/* ---------- samples ---------- */
+async function loadSamples() {
+  const btn = $("btn-samples"); btn.disabled = true;
+  try {
+    const d = await api("/api/samples?n=" + sampleCount);
+    const ok = d.samples.filter(s => s.correct).length;
+    $("sample-summary").innerHTML = `<span class="pill ok"><span class="dot"></span>${ok} correct</span>` +
+      (d.samples.length - ok ? `<span class="pill bad"><span class="dot"></span>${d.samples.length - ok} wrong</span>` : "") +
+      (d.saved_to_db ? `<span>saved to the database</span>` : "");
+    $("samples").innerHTML = d.samples.map(s => `
+      <div class="sample ${s.correct ? "ok" : "bad"}">
+        <img src="data:image/png;base64,${s.image}" alt="Test image ${s.test_index}">
+        <span class="badge" aria-label="${s.correct ? "correct" : "wrong"}">${s.correct ? "✓" : "✗"}</span>
+        <p class="pred">${esc(s.predicted)}</p>
+        <p class="true">true: ${esc(s.true)} · #${s.test_index}</p>
+        <div class="bar"><i style="width:${(s.confidence * 100).toFixed(0)}%"></i></div>
+        <div class="conf"><span>confidence</span><span class="num">${pct(s.confidence, 0)}</span></div>
+      </div>`).join("");
+    loadHistory();
+  } catch (e) {
+    $("samples").innerHTML = `<div class="empty">${esc(e.message)}</div>`;
+  } finally { btn.disabled = false; }
+}
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  sampleCount = +b.dataset.n; loadSamples();
+});
+$("btn-samples").onclick = loadSamples;
+
+/* ---------- upload ---------- */
+const drop = $("drop");
+["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer.files[0]) classify(e.dataTransfer.files[0]); });
+$("file").onchange = e => { if (e.target.files[0]) classify(e.target.files[0]); e.target.value = ""; };
+
+async function classify(file) {
+  if (!file.type.startsWith("image/")) return toast("Please choose an image file.");
+  const url = URL.createObjectURL(file);
+  $("upres").innerHTML = `<div class="skeleton" style="min-height:110px;margin-top:18px"></div>`;
+  const fd = new FormData(); fd.append("file", file);
+  try {
+    const d = await api("/api/predict", { method: "POST", body: fd });
+    $("upres").innerHTML = `<div class="result">
+      <div class="thumbs">
+        <figure><img src="${url}" alt="Your image">your image</figure>
+        <figure><img class="px" src="data:image/png;base64,${d.preprocessed}" alt="What the model sees">model input</figure>
+      </div>
+      <div><h3>${esc(d.predicted)}</h3>
+        <div class="top3">${d.top3.map(t => `<div><span>${esc(t.class)}</span><div class="bar"><i style="width:${(t.prob * 100).toFixed(1)}%"></i></div><span class="num">${pct(t.prob, 0)}</span></div>`).join("")}</div>
+      </div></div>`;
+    loadHistory();
+  } catch (e) {
+    $("upres").innerHTML = ""; toast("Prediction failed: " + e.message);
+  }
+}
+
+/* ---------- history ---------- */
+async function loadHistory() {
+  const body = $("hist-body");
+  try {
+    const [s, h] = await Promise.all([api("/api/stats"), api("/api/history?limit=50")]);
+    $("k-stored").textContent = s.total.toLocaleString();
+    const f = $("hist-filter").value;
+    const rows = h.rows.filter(r => f === "all" || (f === "wrong" ? r.true_label && r.true_label !== r.predicted : r.source === f)).slice(0, 15);
+    const top = Object.entries(s.per_predicted_class)[0];
+    body.innerHTML = `
+      <div class="mini">
+        <div><b class="num">${s.total.toLocaleString()}</b><span>rows in predictions</span></div>
+        <div><b class="num">${s.accuracy === null ? "–" : pct(s.accuracy)}</b><span>correct on stored test images</span></div>
+        <div><b class="num">${s.uploads}</b><span>uploaded images</span></div>
+        <div><b>${top ? esc(top[0]) : "–"}</b><span>most predicted class</span></div>
+      </div>
+      ${rows.length ? `<div class="table-wrap"><table class="hist">
+        <thead><tr><th>#</th><th>Time (UTC)</th><th>Source</th><th>Predicted</th><th>True</th><th>Confidence</th></tr></thead>
+        <tbody>${rows.map(r => {
+          const cls = r.true_label === null ? "" : (r.true_label === r.predicted ? "ok" : "bad");
+          return `<tr><td class="num">${r.id}</td><td class="num">${esc(r.created_at.slice(0, 19).replace("T", " "))}</td>
+            <td><span class="chip ${r.source}">${r.source === "upload" ? "upload" : "test #" + r.test_index}</span></td>
+            <td class="${cls}">${esc(r.predicted)}</td><td>${esc(r.true_label ?? "–")}</td><td class="num">${pct(r.confidence, 0)}</td></tr>`;
+        }).join("")}</tbody></table></div>` : `<div class="empty">No rows match this filter yet.</div>`}`;
+  } catch (e) {
+    $("k-stored").textContent = "–";
+    body.innerHTML = `<div class="db-off"><b>Database not connected.</b> ${esc(e.message)}<br>
+      Start it with <code>podman start fashion-db</code>, or run the API with <code>-e DB_HOST=fashion-db</code> (guide part 7).</div>`;
+  }
+}
+$("btn-hist").onclick = loadHistory;
+$("hist-filter").onchange = loadHistory;
+
+/* ---------- lightbox ---------- */
+document.querySelectorAll(".gallery button").forEach(b => b.onclick = () => {
+  const d = $("lightbox"); d.querySelector("img").src = b.dataset.src; d.showModal();
+});
+$("lightbox").onclick = () => $("lightbox").close();
+
+loadInfo(); loadMetrics(); loadSamples();
+</script>
+</body>
+</html>

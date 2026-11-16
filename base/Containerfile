@@ -1,0 +1,54 @@
+# ---------------------------------------------------------------------------
+# fashion-base: shared Python + NumPy runtime for the trainer and API images
+#
+# DO188 concepts: multi-stage build, ARG for build-time settings, UBI images,
+# LABELs, ENV, non-root USER, OpenShift-friendly group-0 permissions.
+# ---------------------------------------------------------------------------
+ARG BUILDER_IMAGE=registry.access.redhat.com/ubi9/python-311:latest
+ARG RUNTIME_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:latest
+
+# ---------- Stage 1: builder (has pip, gcc, headers) ----------
+FROM ${BUILDER_IMAGE} AS builder
+# Default: install only from the bundled ./wheels (no PyPI needed).
+# Lab with PyPI access and an empty ./wheels:  --build-arg PIP_OPTS=""
+ARG PIP_OPTS="--no-index --find-links=/wheels"
+USER 0
+COPY base/requirements.txt /tmp/requirements.txt
+COPY wheels/ /wheels/
+RUN /usr/bin/python3.11 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir ${PIP_OPTS} -r /tmp/requirements.txt && \
+    find /opt/venv -name '__pycache__' -prune -exec rm -rf {} +
+
+# ---------- Stage 2: small runtime (no compilers, no pip cache) ----------
+FROM ${RUNTIME_IMAGE}
+ARG VERSION=1.0
+LABEL name="fashion-base" \
+      version="${VERSION}" \
+      summary="Python 3.11 + NumPy runtime for the Fashion-MNIST lab" \
+      description="Shared base image for the fashion-trainer and fashion-api images (DO188 lab)" \
+      maintainer="durga" \
+      io.k8s.display-name="Fashion-MNIST base" \
+      org.opencontainers.image.version="${VERSION}"
+
+# ubi-minimal needs python3.11 from the UBI RPM repo; the python-311 fallback already has it
+USER 0
+RUN if ! command -v python3.11 >/dev/null; then \
+      microdnf install -y --nodocs --setopt=install_weak_deps=0 python3.11 && microdnf clean all; \
+    fi && \
+    mkdir -p /opt/app-root/src /opt/app-root/common /data /output && \
+    chown -R 1001:0 /opt/app-root /data /output && \
+    chmod -R g=u /opt/app-root /data /output
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --chown=1001:0 common/ /opt/app-root/common/
+
+ENV PATH=/opt/venv/bin:$PATH \
+    HOME=/opt/app-root/src \
+    COMMON_DIR=/opt/app-root/common \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    MPLCONFIGDIR=/tmp/matplotlib
+
+WORKDIR /opt/app-root/src
+USER 1001
+CMD ["python", "-c", "import sys, numpy, matplotlib, flask; print('python', sys.version.split()[0], '| numpy', numpy.__version__, '| matplotlib', matplotlib.__version__, '| flask', flask.__version__)"]

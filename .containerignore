@@ -1,0 +1,13 @@
+# Keep the build context small: never send the dataset or outputs to the build
+dataset/
+output/
+secrets/
+offline/
+openshift/
+kube/
+scripts/
+*.md
+**/__pycache__
+reference-results/
+.env
+db/

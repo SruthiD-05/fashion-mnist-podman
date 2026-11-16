@@ -1,0 +1,25 @@
+# fashion-api: Flask REST API that serves predictions from the trained model
+ARG BASE_IMAGE=localhost/fashion-base:1.0
+FROM ${BASE_IMAGE}
+
+ARG VERSION=1.0
+LABEL name="fashion-api" \
+      version="${VERSION}" \
+      summary="REST API for Fashion-MNIST predictions" \
+      io.k8s.display-name="Fashion-MNIST API" \
+      io.openshift.expose-services="8000:http"
+
+ENV APP_ENV=dev \
+    OUTPUT_DIR=/output \
+    PORT=8000 \
+    GUNICORN_WORKERS=1 \
+    GUNICORN_THREADS=4
+
+COPY --chown=1001:0 api/app.py api/db.py ./
+
+USER 1001
+EXPOSE 8000
+# Only kept when built with --format docker (OCI format has no HEALTHCHECK)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/info', timeout=4)"]
+CMD ["sh", "-c", "exec gunicorn --bind 0.0.0.0:${PORT} --workers ${GUNICORN_WORKERS} --threads ${GUNICORN_THREADS} --access-logfile - app:app"]
