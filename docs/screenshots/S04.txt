@@ -20,9 +20,9 @@ ERROR: Could not find a version that satisfies the requirement blinker==1.9.0 (f
 ERROR: No matching distribution found for blinker==1.9.0
 Error: building at STEP "RUN /usr/bin/python3.11 -m venv /opt/venv &&     /opt/venv/bin/pip install --no-cache-dir ${PIP_OPTS} -r /tmp/requirements.txt &&     find /opt/venv -name '__pycache__' -prune -exec rm -rf {} +": while running runtime: exit status 1
 [student@workstation fashion-mnist-podman]$ podman build --format docker -f trainer/Containerfile -t localhost/fashion-trainer:1.0 . 2>&1 | tail -6
---> Using cache f0468ec15318c5e86af4e75bc1ddc016b0982047d628bf32739c6672c53c1b53
 COMMIT localhost/fashion-trainer:1.0
 --> f0468ec15318
 Successfully tagged localhost/fashion-trainer:1.0
+Successfully tagged docker.io/sruthid05/fashion-trainer:1.0
 Successfully tagged localhost/fashion-trainer:latest
 f0468ec15318c5e86af4e75bc1ddc016b0982047d628bf32739c6672c53c1b53

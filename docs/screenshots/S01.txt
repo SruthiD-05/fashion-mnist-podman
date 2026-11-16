@@ -6,11 +6,16 @@ b54c3cb4b5ea  docker.io/library/nginx:latest      nginx -g daemon o...  3 days a
 [student@workstation fashion-mnist-podman]$ podman volume rm -f fashion-output fashion-db fashion-scratch fashion_fashion-output fashion_fashion-db 2>/dev/null; podman volume ls
 fashion-output
 fashion-db
+DRIVER      VOLUME NAME
+local       fashion-mnist-podman_fashion-output
+local       fashion-mnist-podman_fashion-db
 [student@workstation fashion-mnist-podman]$ podman network rm fashion-net fashion_fashion-net 2>/dev/null; podman network ls
 fashion-net
-NETWORK ID    NAME        DRIVER
-2f259bab93aa  podman      bridge
+NETWORK ID    NAME                              DRIVER
+a9044b25aa3f  fashion-mnist-podman_fashion-net  bridge
+2f259bab93aa  podman                            bridge
+d216288daba4  podman-default-kube-network       bridge
 [student@workstation fashion-mnist-podman]$ podman secret rm api_token db_password 2>/dev/null; podman secret ls
-3734f1e452e7d1581b72115d0
-3971fcfc394b4da5f78de44cc
+a2e40f95332c93aac69f191ea
+6a7277ad851b41003962e186e
 ID          NAME        DRIVER      CREATED     UPDATED

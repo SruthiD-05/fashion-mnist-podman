@@ -1,24 +1,28 @@
 [student@workstation fashion-mnist-podman]$ podman build --format docker -f api/Containerfile -t localhost/fashion-api:1.0 . 2>&1 | tail -6
---> Using cache db8f09393ed0f921b7241a319fca6c1ac06433f27bdedbd86bd78b8a83747108
 COMMIT localhost/fashion-api:1.0
 --> db8f09393ed0
 Successfully tagged localhost/fashion-api:1.0
+Successfully tagged docker.io/sruthid05/fashion-api:1.0
 Successfully tagged localhost/fashion-api:latest
 db8f09393ed0f921b7241a319fca6c1ac06433f27bdedbd86bd78b8a83747108
 [student@workstation fashion-mnist-podman]$ podman build --format docker -f ui/Containerfile -t localhost/fashion-ui:1.0 . 2>&1 | tail -6
---> Using cache f08dab7fe169a912c06612d7dc5af906ee1b55310b30b10cd7b907e585af25d1
 COMMIT localhost/fashion-ui:1.0
 --> f08dab7fe169
 Successfully tagged localhost/fashion-ui:1.0
+Successfully tagged docker.io/sruthid05/fashion-ui:1.0
 Successfully tagged localhost/fashion-ui:latest
 f08dab7fe169a912c06612d7dc5af906ee1b55310b30b10cd7b907e585af25d1
 [student@workstation fashion-mnist-podman]$ podman images --filter reference='localhost/fashion-*'
-REPOSITORY                 TAG         IMAGE ID      CREATED       SIZE
-localhost/fashion-ui       1.0         f08dab7fe169  24 hours ago  337 MB
-localhost/fashion-ui       latest      f08dab7fe169  24 hours ago  337 MB
-localhost/fashion-api      1.0         db8f09393ed0  24 hours ago  330 MB
-localhost/fashion-api      latest      db8f09393ed0  24 hours ago  330 MB
-localhost/fashion-trainer  1.0         f0468ec15318  24 hours ago  330 MB
-localhost/fashion-trainer  latest      f0468ec15318  24 hours ago  330 MB
-localhost/fashion-base     latest      7f6f2c3b1ec9  24 hours ago  330 MB
-localhost/fashion-base     1.0         7f6f2c3b1ec9  24 hours ago  330 MB
+REPOSITORY                           TAG         IMAGE ID      CREATED       SIZE
+localhost/fashion-ui                 1.0         f08dab7fe169  24 hours ago  337 MB
+docker.io/sruthid05/fashion-ui       1.0         f08dab7fe169  24 hours ago  337 MB
+localhost/fashion-ui                 latest      f08dab7fe169  24 hours ago  337 MB
+localhost/fashion-api                1.0         db8f09393ed0  24 hours ago  330 MB
+docker.io/sruthid05/fashion-api      1.0         db8f09393ed0  24 hours ago  330 MB
+localhost/fashion-api                latest      db8f09393ed0  24 hours ago  330 MB
+localhost/fashion-trainer            1.0         f0468ec15318  24 hours ago  330 MB
+docker.io/sruthid05/fashion-trainer  1.0         f0468ec15318  24 hours ago  330 MB
+localhost/fashion-trainer            latest      f0468ec15318  24 hours ago  330 MB
+docker.io/sruthid05/fashion-base     1.0         7f6f2c3b1ec9  24 hours ago  330 MB
+localhost/fashion-base               latest      7f6f2c3b1ec9  24 hours ago  330 MB
+localhost/fashion-base               1.0         7f6f2c3b1ec9  24 hours ago  330 MB

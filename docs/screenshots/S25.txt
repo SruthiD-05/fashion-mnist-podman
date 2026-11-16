@@ -7,33 +7,33 @@ apiVersion: v1
 kind: Pod
 metadata:
   annotations:
-    io.kubernetes.cri-o.SandboxID/fashion-pod-api: 7386dbdd19c1ef00f2633cb025a10861a6f66eb4c07b818c9890a4877457a10d
-    io.kubernetes.cri-o.SandboxID/fashion-pod-ui: 7386dbdd19c1ef00f2633cb025a10861a6f66eb4c07b818c9890a4877457a10d
-  creationTimestamp: "2026-11-16T17:54:27Z"
+    io.kubernetes.cri-o.SandboxID/fashion-pod-api: d82b1e2b36d4e9cfd20c361985d5e1a2765fcdad330bb35854522847205c348b
+    io.kubernetes.cri-o.SandboxID/fashion-pod-ui: d82b1e2b36d4e9cfd20c361985d5e1a2765fcdad330bb35854522847205c348b
+  creationTimestamp: "2026-11-16T18:18:35Z"
   labels:
     app: fashion-pod
   name: fashion-pod
 spec:
   containers:
   - env:
-    - name: DB_HOST
-      value: fashion-db
     - name: APP_ENV
+      value: pod
+    - name: DB_HOST
 [student@workstation fashion-mnist-podman]$ podman pod rm -f fashion-pod
-ab83c039be102c27ae4b2f0be6ba1efbee8c21a14aa3b0dca13c16edea8b4014
+ce433d6532b1c7ab99d521e9212d8db4d665c8bea28f27c06ef683e40b63887c
 [student@workstation fashion-mnist-podman]$ podman kube play kube/fashion-pod.yaml
 Pod:
-c93c9ba3935fac02c128b2f61caad0fed03961d458459db7ffae05a2217db194
+e4fe938642aefa060b66c0df517cf3c66c251cb392930999b6bdd7201c867488
 Containers:
-f86906aa562fe23952325e276f72839829488e630321587dccf0f254dcdd0784
-42384afc5b5efb44fc215846b5b961ae9bf9fbbd1caa8a8789d6c3322425e293
+c6a83e80fe79c77afa45a35747e0ef35595c246cca165c9ea4f13c918f85f9cc
+5cc0b14fc3cfad4b070e6e13586ddf3b7d12dcbaf2bfa0a144170c29773cf7eb
 
 [student@workstation fashion-mnist-podman]$ curl -s localhost:8082/api/info | python3 -m json.tool | grep app_env
     "app_env": "kube-play",
 [student@workstation fashion-mnist-podman]$ podman kube down kube/fashion-pod.yaml
 Pods stopped:
-c93c9ba3935fac02c128b2f61caad0fed03961d458459db7ffae05a2217db194
+e4fe938642aefa060b66c0df517cf3c66c251cb392930999b6bdd7201c867488
 Pods removed:
-c93c9ba3935fac02c128b2f61caad0fed03961d458459db7ffae05a2217db194
+e4fe938642aefa060b66c0df517cf3c66c251cb392930999b6bdd7201c867488
 Secrets removed:
 Volumes removed:

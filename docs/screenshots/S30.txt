@@ -1,8 +1,8 @@
 [student@workstation fashion-mnist-podman]$ podman ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
 NAMES        IMAGE                                    STATUS                  PORTS
-fashion-db   quay.io/sclorg/postgresql-15-c9s:latest  Up 4 seconds            5432/tcp
+fashion-db   quay.io/sclorg/postgresql-15-c9s:latest  Up 5 seconds            5432/tcp
 fashion-api  localhost/fashion-api:1.0                Up 1 second (starting)  0.0.0.0:8000->8000/tcp, 8000/tcp
-fashion-ui   localhost/fashion-ui:1.0                 Up Less than a second   0.0.0.0:8080->8080/tcp, 8080/tcp, 8443/tcp
+fashion-ui   localhost/fashion-ui:1.0                 Up 1 second             0.0.0.0:8080->8080/tcp, 8080/tcp, 8443/tcp
 [student@workstation fashion-mnist-podman]$ curl -s localhost:8000/healthz; echo
 {"model_loaded":true,"status":"ok"}
 

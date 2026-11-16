@@ -1,9 +1,9 @@
 [student@workstation fashion-mnist-podman]$ podman run -d --name fashion-api --network fashion-net -p 8000:8000 -e APP_ENV=lab -e DB_HOST=fashion-db --secret api_token --secret db_password -v fashion-output:/output:ro --health-cmd 'python -c "import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:8000/healthz\", timeout=4)"' --health-interval 30s --restart on-failure localhost/fashion-api:1.0
-8e33ffa8a1e8f4b2d24067df7549dd230ec32cc37a37e237e368b849f9a0d6a9
+8b29f98be82e3a12cf38e51be481444127f4f22fc7b625a825c992c08fe91cda
 [student@workstation fashion-mnist-podman]$ podman run -d --name fashion-ui --network fashion-net -p 8080:8080 localhost/fashion-ui:1.0
-313a86008eafa0a17da77f1dbeb95a02e10a0898c3d253eb90eb97c9fc2a288e
+33ee6bd500efeeee0019b654957dddadd74f9c200380968a5cfc077c258ae792
 [student@workstation fashion-mnist-podman]$ podman ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
-NAMES        IMAGE                                    STATUS                   PORTS
-fashion-db   quay.io/sclorg/postgresql-15-c9s:latest  Up 7 seconds             5432/tcp
-fashion-api  localhost/fashion-api:1.0                Up 2 seconds (starting)  0.0.0.0:8000->8000/tcp, 8000/tcp
-fashion-ui   localhost/fashion-ui:1.0                 Up 1 second              0.0.0.0:8080->8080/tcp, 8080/tcp, 8443/tcp
+NAMES        IMAGE                                    STATUS                  PORTS
+fashion-db   quay.io/sclorg/postgresql-15-c9s:latest  Up 24 seconds           5432/tcp
+fashion-api  localhost/fashion-api:1.0                Up 1 second (starting)  0.0.0.0:8000->8000/tcp, 8000/tcp
+fashion-ui   localhost/fashion-ui:1.0                 Up Less than a second   0.0.0.0:8080->8080/tcp, 8080/tcp, 8443/tcp

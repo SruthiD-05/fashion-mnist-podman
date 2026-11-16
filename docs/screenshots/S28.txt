@@ -1,6 +1,6 @@
 [student@workstation fashion-mnist-podman]$ podman login docker.io -u sruthid05
 Password: 
-Login Succeeded!
+Error: logging into "docker.io": invalid username/password
 [student@workstation fashion-mnist-podman]$ podman tag localhost/fashion-base:1.0 docker.io/sruthid05/fashion-base:1.0
 [student@workstation fashion-mnist-podman]$ podman tag localhost/fashion-trainer:1.0 docker.io/sruthid05/fashion-trainer:1.0
 [student@workstation fashion-mnist-podman]$ podman tag localhost/fashion-api:1.0 docker.io/sruthid05/fashion-api:1.0

@@ -15,7 +15,7 @@
     ],
     "database": "error: connection to server at \"fashion-db\" (10.89.0.3), port 5432 failed: FATAL:  password authentication failed for user \"fashion\"",
     "db_host": "fashion-db",
-    "hostname": "8e33ffa8a1e8",
+    "hostname": "8b29f98be82e",
     "model_loaded": true,
     "output_dir": "/output",
     "token_configured": true,
