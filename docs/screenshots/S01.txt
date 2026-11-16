@@ -4,18 +4,13 @@ CONTAINER ID  IMAGE                               COMMAND               CREATED 
 9730727fca3a  localhost/edusmart:RA2411028010014  nginx -g daemon o...  3 days ago  Exited (0) 3 days ago  0.0.0.0:8009->80/tcp, 80/tcp  edusmart-RA2411028010014
 b54c3cb4b5ea  docker.io/library/nginx:latest      nginx -g daemon o...  3 days ago  Exited (0) 3 days ago  0.0.0.0:8001->80/tcp, 80/tcp  demo-html-RA2411028010014
 [student@workstation fashion-mnist-podman]$ podman volume rm -f fashion-output fashion-db fashion-scratch fashion_fashion-output fashion_fashion-db 2>/dev/null; podman volume ls
-fashion-output
-fashion-db
 DRIVER      VOLUME NAME
 local       fashion-mnist-podman_fashion-output
 local       fashion-mnist-podman_fashion-db
 [student@workstation fashion-mnist-podman]$ podman network rm fashion-net fashion_fashion-net 2>/dev/null; podman network ls
-fashion-net
 NETWORK ID    NAME                              DRIVER
 a9044b25aa3f  fashion-mnist-podman_fashion-net  bridge
 2f259bab93aa  podman                            bridge
 d216288daba4  podman-default-kube-network       bridge
 [student@workstation fashion-mnist-podman]$ podman secret rm api_token db_password 2>/dev/null; podman secret ls
-a2e40f95332c93aac69f191ea
-6a7277ad851b41003962e186e
 ID          NAME        DRIVER      CREATED     UPDATED

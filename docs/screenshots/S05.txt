@@ -23,6 +23,6 @@ localhost/fashion-api                latest      db8f09393ed0  24 hours ago  330
 localhost/fashion-trainer            1.0         f0468ec15318  24 hours ago  330 MB
 docker.io/sruthid05/fashion-trainer  1.0         f0468ec15318  24 hours ago  330 MB
 localhost/fashion-trainer            latest      f0468ec15318  24 hours ago  330 MB
+localhost/fashion-base               1.0         7f6f2c3b1ec9  24 hours ago  330 MB
 docker.io/sruthid05/fashion-base     1.0         7f6f2c3b1ec9  24 hours ago  330 MB
 localhost/fashion-base               latest      7f6f2c3b1ec9  24 hours ago  330 MB
-localhost/fashion-base               1.0         7f6f2c3b1ec9  24 hours ago  330 MB

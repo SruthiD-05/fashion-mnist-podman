@@ -12,4 +12,4 @@ fashion-api
 [student@workstation fashion-mnist-podman]$ podman unpause fashion-api
 fashion-api
 [student@workstation fashion-mnist-podman]$ podman ps --filter name=fashion-api --format '{{.Names}} {{.Status}}'
-fashion-api Up 1 second (starting)
+fashion-api Up Less than a second (starting)

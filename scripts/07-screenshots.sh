@@ -13,6 +13,8 @@
 # If gnome-screenshot is installed it also saves the window to ~/fashion-screenshots/.
 # The text output of each step is saved to ~/fashion-screenshots/Sxx.txt as well.
 #
+# Maximise the terminal window before you start, so that each screen fits.
+#
 # WARNING: step 1 removes the containers, volumes, network and secrets of the lab
 # (not the images) so that every "create" command can be shown. The model is
 # trained again in step 9 (about 4 minutes) and the stack is left running at the end.
@@ -23,6 +25,14 @@ OUT=~/fashion-screenshots
 mkdir -p "$OUT"
 DB_IMAGE=${DB_IMAGE:-quay.io/sclorg/postgresql-15-c9s:latest}
 [ -z "${REGISTRY:-}" ] && [ -n "${DOCKER_USER:-}" ] && REGISTRY=docker.io/$DOCKER_USER
+UBI_REPO=https://cdn-ubi.redhat.com/content/public/ubi/dist/ubi9/9/x86_64/appstream/os/repodata/repomd.xml
+if [ -z "${RUNTIME_IMAGE:-}" ]; then
+  if curl -sf -m 10 -o /dev/null "$UBI_REPO"; then RUNTIME_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:latest
+  else RUNTIME_IMAGE=registry.access.redhat.com/ubi9/python-311:latest; fi
+fi
+# bundled wheels first, PyPI for anything missing
+BARGS="--build-arg RUNTIME_IMAGE=$RUNTIME_IMAGE --build-arg PIP_OPTS=--find-links=/wheels"
+printf '\e[9;1t'   # ask the terminal to maximise itself (ignored if unsupported)
 PROMPT="[$USER@$(hostname -s) $(basename "$PWD")]\$"
 STEP=0
 TITLE=""
@@ -76,6 +86,7 @@ if banner "Clean start: remove old containers, volumes, network and secrets"; th
   run "podman volume rm -f fashion-output fashion-db fashion-scratch fashion_fashion-output fashion_fashion-db 2>/dev/null; podman volume ls"
   run "podman network rm fashion-net fashion_fashion-net 2>/dev/null; podman network ls"
   run "podman secret rm api_token db_password 2>/dev/null; podman secret ls"
+  rm -f secrets/api_token.txt secrets/db_password.txt .env   # new random secrets are made in step 8
   pause
 fi
 
@@ -100,7 +111,7 @@ fi
 # ---------------------------------------------------------------- 4. build
 if banner "Build the base and trainer images (multi-stage Containerfile)"; then
   run "cat base/Containerfile | grep -E '^(FROM|LABEL|USER|RUN|COPY|ENV)' | head -16"
-  run "podman build --format docker -f base/Containerfile -t localhost/fashion-base:1.0 . 2>&1 | tail -6"
+  run "podman build --format docker $BARGS -f base/Containerfile -t localhost/fashion-base:1.0 . 2>&1 | tail -6"
   run "podman build --format docker -f trainer/Containerfile -t localhost/fashion-trainer:1.0 . 2>&1 | tail -6"
   pause
 fi
@@ -136,8 +147,9 @@ if banner "Named volumes, bind mount with rootless UID mapping, secrets"; then
   run "podman unshare cat /proc/self/uid_map"
   run "podman unshare chown -R 1001:0 dataset && ls -ln dataset | head -5"
   mkdir -p secrets
-  [ -s secrets/api_token.txt ]   || openssl rand -hex 16 > secrets/api_token.txt
-  [ -s secrets/db_password.txt ] || openssl rand -hex 12 > secrets/db_password.txt
+  # no trailing newline: PostgreSQL would make the newline part of the password
+  [ -s secrets/api_token.txt ]   || openssl rand -hex 16 | tr -d '\n' > secrets/api_token.txt
+  [ -s secrets/db_password.txt ] || openssl rand -hex 12 | tr -d '\n' > secrets/db_password.txt
   chmod 600 secrets/*.txt
   echo "DB_PASSWORD=$(cat secrets/db_password.txt)" > .env; chmod 600 .env
   run "podman secret create api_token secrets/api_token.txt"
@@ -149,7 +161,7 @@ fi
 
 # ---------------------------------------------------------------- 9. train
 if banner "Train the CNN in a one-shot container (about 4 minutes)"; then
-  run "podman run --name fashion-trainer --rm --network fashion-net -e EPOCHS=5 --memory 2g -v ./dataset:/data:Z -v fashion-output:/output localhost/fashion-trainer:1.0 2>&1 | grep -E 'STEP|^  (train:|trainable|epoch [0-9]+/|TEST ACCURACY)|\\[(OK |BAD)\\]|saved to'"
+  run "podman run --name fashion-trainer --rm --network fashion-net -e EPOCHS=5 --memory 2g -v ./dataset:/data:Z -v fashion-output:/output localhost/fashion-trainer:1.0 2>&1 | grep --line-buffered -E 'STEP|^  (train:|trainable|epoch [0-9]+/|TEST ACCURACY)|\\[(OK |BAD)\\]|saved to'"
   pause
 fi
 
@@ -178,7 +190,7 @@ if banner "PostgreSQL database container (password from a podman secret)"; then
   wait_db
   run "podman logs fashion-db 2>&1 | tail -5"
   run "podman exec fashion-db pg_isready"
-  run "podman inspect fashion-db --format '{{.Config.Env}}' | tr ' ' '\n' | grep -i -E 'POSTGRES|PASS'"
+  run "podman inspect fashion-db --format '{{.Config.Env}}' | tr ' ' '\n' | grep -E '^POSTGRESQL_(USER|DATABASE|PASSWORD)=' | sed -E 's/(PASSWORD=).*/\1******** (value masked for the report)/'"
   pause
 fi
 
@@ -196,6 +208,8 @@ if banner "Run the API (secrets, health check, restart policy) and the UI"; then
   run "podman run -d --name fashion-ui --network fashion-net -p 8080:8080 localhost/fashion-ui:1.0"
   wait_api
   run "podman ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'"
+  run "podman exec fashion-api ls -l /run/secrets"
+  run "podman inspect fashion-api --format '{{.Config.Env}}' | grep -c PASSWORD || echo 'no password in the API environment'"
   pause
 fi
 
@@ -210,8 +224,9 @@ fi
 if banner "REST API: health, predict, token-protected reload, health check"; then
   run "curl -s localhost:8000/healthz; echo"
   run "curl -s localhost:8000/api/info | python3 -m json.tool | grep -E 'model_loaded|app_env|database|uid|token'"
-  IMG=test-images/08-sneaker.png
-  [ -f "$IMG" ] || IMG=$(ls ~/fashion-results/*.png | head -1)
+  run "podman exec fashion-api python -c \"import numpy as np; from PIL import Image; d=np.load('/output/test_subset.npz'); Image.fromarray(d['images'][7]).resize((112, 112)).save('/tmp/item.png'); print('saved /tmp/item.png, true label index', int(d['labels'][7]))\""
+  run "podman cp fashion-api:/tmp/item.png ./item.png && ls -l item.png"
+  IMG=item.png
   run "curl -s -F file=@$IMG localhost:8000/api/predict | python3 -c 'import json,sys; d=json.load(sys.stdin); d.pop(\"preprocessed\"); print(json.dumps(d, indent=1))'"
   run "curl -s -o /dev/null -w 'reload without token -> HTTP %{http_code}\n' -X POST localhost:8000/api/reload"
   run "curl -s -o /dev/null -w 'reload with token    -> HTTP %{http_code}\n' -X POST -H \"X-API-Token: \$(cat secrets/api_token.txt)\" localhost:8000/api/reload"
@@ -224,7 +239,13 @@ if banner "Web UI: open http://localhost:8080 in Firefox"; then
   echo "click 'New random images' once, then take a screenshot of the browser (S$(printf '%02d' $STEP))."
   echo "Upload one image from test-images/ in 'Classify your own image' and take a second"
   echo "screenshot (save it as S$(printf '%02d' $STEP)b.png)."
+  curl -s 'localhost:8000/api/samples?n=12' >/dev/null
   (command -v firefox >/dev/null && firefox http://localhost:8080 >/dev/null 2>&1 &)
+  if command -v gnome-screenshot >/dev/null 2>&1; then
+    echo; echo "A full-screen picture is taken automatically in 15 seconds: bring Firefox to the front."
+    gnome-screenshot -d 15 -f "$OUT/S$(printf '%02d' $STEP)-browser.png" >/dev/null 2>&1
+    echo "saved $OUT/S$(printf '%02d' $STEP)-browser.png"
+  fi
   pause
 fi
 
@@ -273,19 +294,21 @@ fi
 if banner "Troubleshooting: disconnect the API from the network"; then
   wait_api
   run "podman network disconnect fashion-net fashion-api"
-  run "curl -s localhost:8000/api/info | python3 -m json.tool | grep database"
+  run "curl -s -m 3 localhost:8000/healthz || echo 'API unreachable: the container has no network (and no published port)'"
   run "podman network connect fashion-net fashion-api"
-  sleep 2
+  wait_api
   run "curl -s localhost:8000/api/info | python3 -m json.tool | grep database"
   run "podman stop fashion-db"
   run "curl -s localhost:8000/api/info | python3 -m json.tool | grep database"
   run "podman start fashion-db"
+  wait_db; sleep 2
+  run "curl -s localhost:8000/api/info | python3 -m json.tool | grep database"
   pause
 fi
 
 if banner "Troubleshooting: logs, events and inspect"; then
   run "podman logs --tail 6 fashion-api"
-  run "podman events --since 10m --until now --filter container=fashion-api --format '{{.Time}} {{.Status}} {{.Name}}' | tail -8"
+  run "podman events --since 10m --stream=false --filter container=fashion-api --format '{{.Time}} {{.Status}} {{.Name}}' | tail -8"
   run "podman inspect fashion-api --format 'restart={{.HostConfig.RestartPolicy.Name}} health={{.State.Health.Status}} user={{.Config.User}}'"
   run "podman exec fashion-api id"
   pause
@@ -316,7 +339,8 @@ fi
 # ---------------------------------------------------------------- 26. compose
 if banner "podman-compose: the whole stack from compose.yaml"; then
   podman rm -f fashion-api fashion-ui fashion-db >/dev/null 2>&1
-  run "podman-compose config | head -25"
+  run "podman-compose version 2>&1 | tail -2"
+  run "grep -E '^  [a-z]+:$|image:|ports:|secrets:' compose.yaml | head -20"
   run "EPOCHS=1 podman-compose up -d 2>&1 | tail -8"
   sleep 10
   run "podman-compose ps"

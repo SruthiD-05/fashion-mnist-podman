@@ -12,13 +12,13 @@ COPY --from=builder /opt/venv /opt/venv
 COPY --chown=1001:0 common/ /opt/app-root/common/
 ENV PATH=/opt/venv/bin:$PATH \
 USER 1001
-[student@workstation fashion-mnist-podman]$ podman build --format docker -f base/Containerfile -t localhost/fashion-base:1.0 . 2>&1 | tail -6
---> 903b4957110f
-[1/2] STEP 6/6: RUN /usr/bin/python3.11 -m venv /opt/venv &&     /opt/venv/bin/pip install --no-cache-dir ${PIP_OPTS} -r /tmp/requirements.txt &&     find /opt/venv -name '__pycache__' -prune -exec rm -rf {} +
-Looking in links: /wheels
-ERROR: Could not find a version that satisfies the requirement blinker==1.9.0 (from versions: none)
-ERROR: No matching distribution found for blinker==1.9.0
-Error: building at STEP "RUN /usr/bin/python3.11 -m venv /opt/venv &&     /opt/venv/bin/pip install --no-cache-dir ${PIP_OPTS} -r /tmp/requirements.txt &&     find /opt/venv -name '__pycache__' -prune -exec rm -rf {} +": while running runtime: exit status 1
+[student@workstation fashion-mnist-podman]$ podman build --format docker --build-arg RUNTIME_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal:latest --build-arg PIP_OPTS=--find-links=/wheels -f base/Containerfile -t localhost/fashion-base:1.0 . 2>&1 | tail -6
+[2/2] COMMIT localhost/fashion-base:1.0
+--> 7f6f2c3b1ec9
+Successfully tagged localhost/fashion-base:1.0
+Successfully tagged docker.io/sruthid05/fashion-base:1.0
+Successfully tagged localhost/fashion-base:latest
+7f6f2c3b1ec9ef69a6b41ada1097e53c2e9b9ba7f15aa657403fb4d611d13781
 [student@workstation fashion-mnist-podman]$ podman build --format docker -f trainer/Containerfile -t localhost/fashion-trainer:1.0 . 2>&1 | tail -6
 COMMIT localhost/fashion-trainer:1.0
 --> f0468ec15318

@@ -1,9 +1,18 @@
 [student@workstation fashion-mnist-podman]$ podman run -d --name fashion-api --network fashion-net -p 8000:8000 -e APP_ENV=lab -e DB_HOST=fashion-db --secret api_token --secret db_password -v fashion-output:/output:ro --health-cmd 'python -c "import urllib.request; urllib.request.urlopen(\"http://127.0.0.1:8000/healthz\", timeout=4)"' --health-interval 30s --restart on-failure localhost/fashion-api:1.0
-8b29f98be82e3a12cf38e51be481444127f4f22fc7b625a825c992c08fe91cda
+c98316d17c7f919c121e49011bfe7ae9e419cbd167762880e86158c2cdd53430
 [student@workstation fashion-mnist-podman]$ podman run -d --name fashion-ui --network fashion-net -p 8080:8080 localhost/fashion-ui:1.0
-33ee6bd500efeeee0019b654957dddadd74f9c200380968a5cfc077c258ae792
+1e3f1e998a218256d84608bf71332b369cc950f9a19f6032d1cc523ea24e30d7
 [student@workstation fashion-mnist-podman]$ podman ps --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
 NAMES        IMAGE                                    STATUS                  PORTS
-fashion-db   quay.io/sclorg/postgresql-15-c9s:latest  Up 24 seconds           5432/tcp
+fashion-db   quay.io/sclorg/postgresql-15-c9s:latest  Up 6 seconds            5432/tcp
 fashion-api  localhost/fashion-api:1.0                Up 1 second (starting)  0.0.0.0:8000->8000/tcp, 8000/tcp
-fashion-ui   localhost/fashion-ui:1.0                 Up Less than a second   0.0.0.0:8080->8080/tcp, 8080/tcp, 8443/tcp
+fashion-ui   localhost/fashion-ui:1.0                 Up 1 second             0.0.0.0:8080->8080/tcp, 8080/tcp, 8443/tcp
+[student@workstation fashion-mnist-podman]$ podman exec fashion-api ls -l /run/secrets
+total 12
+-r--r--r--. 1 root root  32 Nov 16 18:39 api_token
+-r--r--r--. 1 root root  24 Nov 16 18:39 db_password
+-rw-r--r--. 1 root root 358 Nov 16 18:39 redhat.repo
+drwxr-xr-x. 4 root root 140 Nov 16 18:39 rhsm
+[student@workstation fashion-mnist-podman]$ podman inspect fashion-api --format '{{.Config.Env}}' | grep -c PASSWORD || echo 'no password in the API environment'
+0
+no password in the API environment

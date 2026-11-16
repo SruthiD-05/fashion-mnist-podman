@@ -3,27 +3,31 @@
 
 [student@workstation fashion-mnist-podman]$ curl -s localhost:8000/api/info | python3 -m json.tool | grep -E 'model_loaded|app_env|database|uid|token'
     "app_env": "lab",
-    "database": "error: connection to server at \"fashion-db\" (10.89.0.3), port 5432 failed: FATAL:  password authentication failed for user \"fashion\"",
+    "database": "ok",
     "model_loaded": true,
     "token_configured": true,
     "uid": 1001
-[student@workstation fashion-mnist-podman]$ curl -s -F file=@/home/student/fashion-results/confusion_matrix.png localhost:8000/api/predict | python3 -c 'import json,sys; d=json.load(sys.stdin); d.pop("preprocessed"); print(json.dumps(d, indent=1))'
+[student@workstation fashion-mnist-podman]$ podman exec fashion-api python -c "import numpy as np; from PIL import Image; d=np.load('/output/test_subset.npz'); Image.fromarray(d['images'][7]).resize((112, 112)).save('/tmp/item.png'); print('saved /tmp/item.png, true label index', int(d['labels'][7]))"
+saved /tmp/item.png, true label index 7
+[student@workstation fashion-mnist-podman]$ podman cp fashion-api:/tmp/item.png ./item.png && ls -l item.png
+-rw-r--r--. 1 student student 2239 Nov 16 13:39 item.png
+[student@workstation fashion-mnist-podman]$ curl -s -F file=@item.png localhost:8000/api/predict | python3 -c 'import json,sys; d=json.load(sys.stdin); d.pop("preprocessed"); print(json.dumps(d, indent=1))'
 {
- "confidence": 0.6788,
- "predicted": "Sandal",
- "saved_to_db": false,
+ "confidence": 0.9943,
+ "predicted": "Sneaker",
+ "saved_to_db": true,
  "top3": [
   {
+   "class": "Sneaker",
+   "prob": 0.9943
+  },
+  {
    "class": "Sandal",
-   "prob": 0.6788
+   "prob": 0.0052
   },
   {
-   "class": "Ankle boot",
-   "prob": 0.2844
-  },
-  {
-   "class": "Dress",
-   "prob": 0.0243
+   "class": "Bag",
+   "prob": 0.0004
   }
  ]
 }

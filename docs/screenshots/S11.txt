@@ -1,13 +1,13 @@
 [student@workstation fashion-mnist-podman]$ podman volume create fashion-scratch
 fashion-scratch
 [student@workstation fashion-mnist-podman]$ podman run -d --name fashion-bg-trainer -e EPOCHS=1 -e TRAIN_LIMIT=3000 -v ./dataset:/data:Z -v fashion-scratch:/output localhost/fashion-trainer:1.0
-a76642a90f0ba5ec56ddd4ada0cb2a6ad553795118017ee638b2b3f15af8a118
+d69e1aaa3630407880c779eeaa585e7effcab6899934bea377efcc8969b55197
 [student@workstation fashion-mnist-podman]$ podman ps --filter name=fashion-bg-trainer
 CONTAINER ID  IMAGE                          COMMAND     CREATED        STATUS        PORTS       NAMES
-a76642a90f0b  localhost/fashion-trainer:1.0              6 seconds ago  Up 6 seconds              fashion-bg-trainer
+d69e1aaa3630  localhost/fashion-trainer:1.0              6 seconds ago  Up 6 seconds              fashion-bg-trainer
 [student@workstation fashion-mnist-podman]$ podman stats --no-stream fashion-bg-trainer
 ID            NAME                CPU %       MEM USAGE / LIMIT  MEM %       NET IO      BLOCK IO    PIDS        CPU TIME    AVG CPU %
-a76642a90f0b  fashion-bg-trainer  151.46%     311.9MB / 11.22GB  2.78%       0B / 586B   0B / 0B     2           9.324423s   151.46%
+d69e1aaa3630  fashion-bg-trainer  152.21%     257.6MB / 11.22GB  2.30%       0B / 586B   0B / 0B     2           9.458782s   152.21%
 [student@workstation fashion-mnist-podman]$ podman logs fashion-bg-trainer | head -8
 
 ============================================================

@@ -18,10 +18,10 @@ Untagged: docker.io/sruthid05/fashion-api:1.0
 [student@workstation fashion-mnist-podman]$ podman pull docker.io/sruthid05/fashion-api:1.0 | tail -2
 Trying to pull docker.io/sruthid05/fashion-api:1.0...
 Getting image source signatures
+Copying blob sha256:fc991d21fa1496a9b0f257c9611ecff0a521c66390db7b183b824edf8a8b04c0
+Copying blob sha256:943424688839bd2c9c69e66e2e7147504e683f36162915dcf77af33c40f37cc5
 Copying blob sha256:50c4067ddf02302ff03f0512f3847b6cbcfb47c7bb089730fa29c85a1032449d
 Copying blob sha256:62b7488f90b230e328ec61953cafd76f0787db25a276fd116a5e2a6d80f74f23
-Copying blob sha256:943424688839bd2c9c69e66e2e7147504e683f36162915dcf77af33c40f37cc5
-Copying blob sha256:fc991d21fa1496a9b0f257c9611ecff0a521c66390db7b183b824edf8a8b04c0
 Copying blob sha256:4d1d01808673299f6c8b490630b2985e34c9f0295818bb4eeed729bff3fb78a8
 Copying config sha256:db8f09393ed0f921b7241a319fca6c1ac06433f27bdedbd86bd78b8a83747108
 Writing manifest to image destination
@@ -38,17 +38,17 @@ docker.io/sruthid05/fashion-trainer  1.0         f0468ec15318  24 hours ago  330
 localhost/fashion-trainer            1.0         f0468ec15318  24 hours ago  330 MB
 localhost/fashion-trainer            latest      f0468ec15318  24 hours ago  330 MB
 docker.io/sruthid05/fashion-base     1.0         7f6f2c3b1ec9  24 hours ago  330 MB
-localhost/fashion-base               latest      7f6f2c3b1ec9  24 hours ago  330 MB
 localhost/fashion-base               1.0         7f6f2c3b1ec9  24 hours ago  330 MB
+localhost/fashion-base               latest      7f6f2c3b1ec9  24 hours ago  330 MB
 [student@workstation fashion-mnist-podman]$ podman save -o ~/fashion-api.tar localhost/fashion-api:1.0 && ls -lh ~/fashion-api.tar
 Error: docker-archive doesn't support modifying existing images
 [student@workstation fashion-mnist-podman]$ podman load -i ~/fashion-api.tar | tail -1
 Getting image source signatures
 Copying blob sha256:d70768bb068f2ed7b10bd6ffbef2e4e9a540e4ef77dffbc4edc2ad91b30d110b
 Copying blob sha256:679751d2250b699a428c6e8efc47d180cae904f6ea3d1ecd92f845b326df2dbc
-Copying blob sha256:635622c098a6ce81341703f1973f08f305eda8e47641cdf2c3e58ce37a4ac060
 Copying blob sha256:aea0a3d9f73a1ae55053e3ca6c16762ae8cfb997e27e9846cad1c0e901ce8152
 Copying blob sha256:7fa944f6bee17c57187d5916ce1d5aca18bb1d7577086e8b299bfdb114fe47d5
+Copying blob sha256:635622c098a6ce81341703f1973f08f305eda8e47641cdf2c3e58ce37a4ac060
 Copying config sha256:db8f09393ed0f921b7241a319fca6c1ac06433f27bdedbd86bd78b8a83747108
 Writing manifest to image destination
 Loaded image: localhost/fashion-api:1.0

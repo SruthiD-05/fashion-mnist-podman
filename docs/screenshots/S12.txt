@@ -1,21 +1,14 @@
 [student@workstation fashion-mnist-podman]$ podman run -d --name fashion-db --network fashion-net -e POSTGRESQL_USER=fashion -e POSTGRESQL_DATABASE=fashion --secret db_password,type=env,target=POSTGRESQL_PASSWORD -v fashion-db:/var/lib/pgsql/data --restart on-failure quay.io/sclorg/postgresql-15-c9s:latest
-b2f384224bf956c8f946377afd52c829aa3b75af088089311f3a528f3fbbe624
+bba286004590dac081c6c0ea73b64c50d9b6f4bcea2019138d3b980707c5ab50
 [student@workstation fashion-mnist-podman]$ podman logs fashion-db 2>&1 | tail -5
 waiting for server to shut down.... done
 server stopped
 Starting server...
-2026-11-16 18:16:23.727 UTC [1] LOG:  redirecting log output to logging collector process
-2026-11-16 18:16:23.727 UTC [1] HINT:  Future log output will appear in directory "log".
+2026-11-16 18:39:33.253 UTC [1] LOG:  redirecting log output to logging collector process
+2026-11-16 18:39:33.253 UTC [1] HINT:  Future log output will appear in directory "log".
 [student@workstation fashion-mnist-podman]$ podman exec fashion-db pg_isready
 /var/run/postgresql:5432 - accepting connections
-[student@workstation fashion-mnist-podman]$ podman inspect fashion-db --format '{{.Config.Env}}' | tr ' ' '\n' | grep -i -E 'POSTGRES|PASS'
-[POSTGRESQL_DATABASE=fashion
+[student@workstation fashion-mnist-podman]$ podman inspect fashion-db --format '{{.Config.Env}}' | tr ' ' '\n' | grep -E '^POSTGRESQL_(USER|DATABASE|PASSWORD)=' | sed -E 's/(PASSWORD=).*/\1******** (value masked for the report)/'
 POSTGRESQL_USER=fashion
-DESCRIPTION=PostgreSQL
-PostgreSQL
-CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/postgresql
-SUMMARY=PostgreSQL
-POSTGRESQL_VERSION=15
-POSTGRESQL_PREV_VERSION=13
-PGUSER=postgres
-POSTGRESQL_PASSWORD=07716393ecd2874e98ccec59
+POSTGRESQL_DATABASE=fashion
+POSTGRESQL_PASSWORD=******** (value masked for the report)

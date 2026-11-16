@@ -1,10 +1,10 @@
 [student@workstation fashion-mnist-podman]$ podman exec fashion-db psql -U fashion -d fashion -Atc 'SELECT count(*) FROM predictions'
-0
+37
 [student@workstation fashion-mnist-podman]$ podman rm -f fashion-db
 fashion-db
 [student@workstation fashion-mnist-podman]$ podman run -d --name fashion-db --network fashion-net -e POSTGRESQL_USER=fashion -e POSTGRESQL_DATABASE=fashion --secret db_password,type=env,target=POSTGRESQL_PASSWORD -v fashion-db:/var/lib/pgsql/data --restart on-failure quay.io/sclorg/postgresql-15-c9s:latest
-3a532fe6b1ccd7b5ac19acc1350d806ad9df20396461c5b919928aacbafe09b0
+42aeab6f5b89d2d6014516bca7fe85a3787aded5c05e6f08ac345fd5dc4cf82c
 [student@workstation fashion-mnist-podman]$ podman exec fashion-db psql -U fashion -d fashion -Atc 'SELECT count(*) FROM predictions'   # same number
-0
+37
 [student@workstation fashion-mnist-podman]$ podman exec fashion-db pg_dump -U fashion fashion > ~/fashion-db-backup.sql && ls -l ~/fashion-db-backup.sql
--rw-r--r--. 1 student student 4139 Nov 16 13:17 /home/student/fashion-db-backup.sql
+-rw-r--r--. 1 student student 7045 Nov 16 13:39 /home/student/fashion-db-backup.sql

@@ -5,6 +5,6 @@ fashion-net driver=bridge dns=true subnet=10.89.0.0/24
 [student@workstation fashion-mnist-podman]$ podman network ls
 NETWORK ID    NAME                              DRIVER
 a9044b25aa3f  fashion-mnist-podman_fashion-net  bridge
-c439caf9b492  fashion-net                       bridge
+389a023ab2c7  fashion-net                       bridge
 2f259bab93aa  podman                            bridge
 d216288daba4  podman-default-kube-network       bridge

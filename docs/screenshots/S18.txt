@@ -1,16 +1,42 @@
 [student@workstation fashion-mnist-podman]$ podman exec fashion-db psql -U fashion -d fashion -Atc 'SELECT count(*) FROM predictions'
-0
+37
 [student@workstation fashion-mnist-podman]$ podman exec fashion-db psql -U fashion -d fashion -c 'SELECT id, source, predicted, true_label, round(confidence::numeric,3) AS conf FROM predictions ORDER BY id DESC LIMIT 8'
- id | source | predicted | true_label | conf 
-----+--------+-----------+------------+------
-(0 rows)
+ id | source | predicted  | true_label | conf  
+----+--------+------------+------------+-------
+ 37 | sample | Bag        | Bag        | 1.000
+ 36 | sample | Sandal     | Sandal     | 1.000
+ 35 | sample | Pullover   | Pullover   | 0.938
+ 34 | sample | Sneaker    | Sneaker    | 0.999
+ 33 | sample | Ankle boot | Ankle boot | 0.998
+ 32 | sample | Trouser    | Trouser    | 0.916
+ 31 | sample | Shirt      | Shirt      | 0.699
+ 30 | sample | Sandal     | Sandal     | 1.000
+(8 rows)
 
 [student@workstation fashion-mnist-podman]$ podman exec fashion-db psql -U fashion -d fashion -c 'SELECT * FROM accuracy_by_category'
- category | predictions | correct | accuracy_pct 
-----------+-------------+---------+--------------
-(0 rows)
+  category   | predictions | correct | accuracy_pct 
+-------------+-------------+---------+--------------
+ accessories |           4 |       4 |        100.0
+ dresses     |           3 |       3 |        100.0
+ bottoms     |           2 |       2 |        100.0
+ outerwear   |           1 |       1 |        100.0
+ footwear    |          19 |      18 |         94.7
+ tops        |           7 |       5 |         71.4
+(6 rows)
 
 [student@workstation fashion-mnist-podman]$ curl -s localhost:8000/api/stats | python3 -m json.tool | head -15
 {
-    "error": "database error: connection to server at \"fashion-db\" (10.89.0.3), port 5432 failed: FATAL:  password authentication failed for user \"fashion\"\n"
-}
+    "accuracy": 0.9167,
+    "correct": 33,
+    "labelled": 36,
+    "per_predicted_class": {
+        "Ankle boot": 5,
+        "Bag": 4,
+        "Coat": 1,
+        "Dress": 3,
+        "Pullover": 3,
+        "Sandal": 7,
+        "Shirt": 4,
+        "Sneaker": 8,
+        "Trouser": 2
+    },

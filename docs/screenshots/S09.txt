@@ -1,4 +1,4 @@
-[student@workstation fashion-mnist-podman]$ podman run --name fashion-trainer --rm --network fashion-net -e EPOCHS=5 --memory 2g -v ./dataset:/data:Z -v fashion-output:/output localhost/fashion-trainer:1.0 2>&1 | grep -E 'STEP|^  (train:|trainable|epoch [0-9]+/|TEST ACCURACY)|\[(OK |BAD)\]|saved to'
+[student@workstation fashion-mnist-podman]$ podman run --name fashion-trainer --rm --network fashion-net -e EPOCHS=5 --memory 2g -v ./dataset:/data:Z -v fashion-output:/output localhost/fashion-trainer:1.0 2>&1 | grep --line-buffered -E 'STEP|^  (train:|trainable|epoch [0-9]+/|TEST ACCURACY)|\[(OK |BAD)\]|saved to'
 STEP 1/4  Load the Fashion-MNIST dataset
   train: (60000, 28, 28)  test: (10000, 28, 28)  classes: 10
 STEP 2/4  Build and train the CNN
@@ -6,8 +6,8 @@ STEP 2/4  Build and train the CNN
   epoch 1/5  loss=0.4254  test_acc=0.8823  elapsed=35s
   epoch 2/5  loss=0.2840  test_acc=0.8930  elapsed=73s
   epoch 3/5  loss=0.2409  test_acc=0.8969  elapsed=110s
-  epoch 4/5  loss=0.2147  test_acc=0.9050  elapsed=145s
-  epoch 5/5  loss=0.1902  test_acc=0.9077  elapsed=182s
+  epoch 4/5  loss=0.2147  test_acc=0.9050  elapsed=148s
+  epoch 5/5  loss=0.1902  test_acc=0.9077  elapsed=187s
 STEP 3/4  Evaluate accuracy on the test set
   TEST ACCURACY: 90.77%  (9077/10000)
 STEP 4/4  Show sample predictions with true labels

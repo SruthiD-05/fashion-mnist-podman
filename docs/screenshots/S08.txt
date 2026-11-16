@@ -18,12 +18,12 @@ total 30164
 -rw-r--r--. 1 101000 1000 26421880 Nov 15 13:13 train-images-idx3-ubyte.gz
 -rw-r--r--. 1 101000 1000    29515 Nov 15 13:13 train-labels-idx1-ubyte.gz
 [student@workstation fashion-mnist-podman]$ podman secret create api_token secrets/api_token.txt
-8389eda08aa074d85ab740461
+9eb1ffc3def845c1179ee5f1b
 [student@workstation fashion-mnist-podman]$ podman secret create db_password secrets/db_password.txt
-eeefdaaee34cfedd708a661b1
+bbbf39a6d1ac1a58f9d63fda4
 [student@workstation fashion-mnist-podman]$ podman secret ls
 ID                         NAME         DRIVER      CREATED                 UPDATED
-8389eda08aa074d85ab740461  api_token    file        Less than a second ago  Less than a second ago
-eeefdaaee34cfedd708a661b1  db_password  file        Less than a second ago  Less than a second ago
+9eb1ffc3def845c1179ee5f1b  api_token    file        Less than a second ago  Less than a second ago
+bbbf39a6d1ac1a58f9d63fda4  db_password  file        Less than a second ago  Less than a second ago
 [student@workstation fashion-mnist-podman]$ podman secret inspect db_password --format '{{.Spec.Name}} driver={{.Spec.Driver.Name}} created={{.CreatedAt}}'
-db_password driver=file created=2026-11-16 13:12:17.233537188 -0500 EST
+db_password driver=file created=2026-11-16 13:36:00.970712487 -0500 EST
